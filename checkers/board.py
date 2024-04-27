@@ -6,7 +6,6 @@ class Board(object):
     def __init__(self):
         self.board = []
         self.turn = 0
-        self.selected_piece = None
         self.brown_left = self.white_left = 12
         self.brown_queens = self.white_queens = 0
         self.create_board()
@@ -38,3 +37,17 @@ class Board(object):
                 piece = self.board[row][col]
                 if piece != 0:
                     piece.draw(win)
+
+    def get_piece(self, row, col):
+        return self.board[row][col]
+
+    def move(self, piece, row, col):
+        self.board[piece.row][piece.col], self.board[row][col] = self.board[row][col], self.board[piece.row][piece.col]
+        piece.move(row, col)
+
+        if row == ROWS - 1 or row == 0:
+            piece.make_queen()
+            if piece.color == BROWN:
+                self.brown_queens += 1
+            else:
+                self.white_queens += 1
