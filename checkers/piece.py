@@ -10,12 +10,6 @@ class Piece(object):
         self.col = col
         self.color = color
         self.queen = False
-
-        if self.color == BEIGE:
-            self.direction = -1
-        else:
-            self.direction = 1
-        
         self.x = 0
         self.y = 0
         self.calculate_position()
