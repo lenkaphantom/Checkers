@@ -1,5 +1,5 @@
 import pygame
-from .constants import ROWS, COLS, SQUARE_SIZE, BEIGE, BLACK, WHITE, BROWN
+from .constants import ROWS, COLS, SQUARE_SIZE, BEIGE, BLACK, WHITE, BROWN, BLUE
 from .piece import Piece
 
 class Board(object):
@@ -59,15 +59,15 @@ class Board(object):
         row = piece.row
 
         if piece.color == BROWN or piece.queen:
-            moves.update(self._get_moves_to_left(row - 1, max(row - 3, -1), -1, piece.color, left))
-            moves.update(self._get_moves_to_right(row - 1, max(row - 3, -1), -1, piece.color, right))
+            moves.update(self.get_moves_left(row - 1, max(row - 3, -1), -1, piece.color, left))
+            moves.update(self.get_moves_right(row - 1, max(row - 3, -1), -1, piece.color, right))
         if piece.color == WHITE or piece.queen:
-            moves.update(self._get_moves_to_left(row + 1, min(row + 3, ROWS), 1, piece.color, left))
-            moves.update(self._get_moves_to_right(row + 1, min(row + 3, ROWS), 1, piece.color, right))
+            moves.update(self.get_moves_left(row + 1, min(row + 3, ROWS), 1, piece.color, left))
+            moves.update(self.get_moves_right(row + 1, min(row + 3, ROWS), 1, piece.color, right))
 
         return moves
     
-    def _get_moves_to_left(self, start, stop, step, color, left, skipped=[]):
+    def get_moves_left(self, start, stop, step, color, left, captured = []):
         moves = {}
         last = []
         for row in range(start, stop, step):
@@ -76,31 +76,31 @@ class Board(object):
             
             current = self.board[row][left]
             if current == 0:
-                if skipped and not last:
+                if captured and not last:
                     break
-                elif skipped:
-                    moves[(row, left)] = last + skipped
+                elif captured:
+                    moves[(row, left)] = last + captured
                 else:
                     moves[(row, left)] = last
                 
                 if last:
                     if step == -1:
-                        row = max(row - 3, 0)
+                        new_row = max(row - 3, 0)
                     else:
-                        row = min(row + 3, ROWS)
-                    moves.update(self._get_moves_to_left(row + step, row, step, color, left - 1, skipped=last))
-                    moves.update(self._get_moves_to_right(row + step, row, step, color, left + 1, skipped=last))
+                        new_row = min(row + 3, ROWS)
+                    moves.update(self.get_moves_left(row + step, new_row, step, color, left - 1, captured = last))
+                    moves.update(self.get_moves_right(row + step, new_row, step, color, left + 1, captured = last))
                 break
             elif current.color == color:
                 break
             else:
-                last = [current]
-            
+                last.append(current)
+
             left -= 1
         
         return moves
-    
-    def _get_moves_to_right(self, start, stop, step, color, right, skipped=[]):
+
+    def get_moves_right(self, start, stop, step, color, right, captured = []):
         moves = {}
         last = []
         for row in range(start, stop, step):
@@ -109,26 +109,36 @@ class Board(object):
             
             current = self.board[row][right]
             if current == 0:
-                if skipped and not last:
+                if captured and not last:
                     break
-                elif skipped:
-                    moves[(row, right)] = last + skipped
+                elif captured:
+                    moves[(row, right)] = last + captured
                 else:
                     moves[(row, right)] = last
                 
                 if last:
                     if step == -1:
-                        row = max(row - 3, 0)
+                        new_row = max(row - 3, 0)
                     else:
-                        row = min(row + 3, ROWS)
-                    moves.update(self._get_moves_to_left(row + step, row, step, color, right - 1, skipped=last))
-                    moves.update(self._get_moves_to_(row + step, row, step, color, right + 1, skipped=last))
+                        new_row = min(row + 3, ROWS)
+                    moves.update(self.get_moves_left(row + step, new_row, step, color, right - 1, captured = last))
+                    moves.update(self.get_moves_right(row + step, new_row, step, color, right + 1, captured = last))
                 break
             elif current.color == color:
                 break
             else:
                 last = [current]
-            
+
             right += 1
         
         return moves
+    
+    
+    def remove(self, pieces):
+        for piece in pieces:
+            self.board[piece.row][piece.col] = 0
+            if piece != 0:
+                if piece.color == BROWN:
+                    self.brown_left -= 1
+                else:
+                    self.white_left -= 1
