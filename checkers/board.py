@@ -149,14 +149,3 @@ class Board(object):
                     self.brown_left -= 1
                 else:
                     self.white_left -= 1
-                    
-    def winner(self):
-        if self.brown_left <= 0:
-            return "WHITE"
-        elif self.white_left <= 0:
-            return "BROWN"
-        if not self.has_valid_moves_for_color(WHITE):
-            return "BROWN"
-        elif not self.has_valid_moves_for_color(BROWN):
-            return "WHITE"
-        return None

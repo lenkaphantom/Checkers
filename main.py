@@ -71,7 +71,7 @@ def main():
     while run:
         clock.tick(FPS)
         
-        if game.board.winner() is not None:
+        if game.winner() is not None:
             game.draw_winner()
             pygame.time.delay(3000)
             run = False
