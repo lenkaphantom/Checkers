@@ -58,6 +58,7 @@ def display_mode_selection_menu():
 
         pygame.display.update()
 
+
 def main():
     pygame.init()
     mode = display_mode_selection_menu()
@@ -70,6 +71,11 @@ def main():
     while run:
         clock.tick(FPS)
         
+        if game.board.winner() is not None:
+            game.draw_winner()
+            pygame.time.delay(3000)
+            run = False
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -77,7 +83,6 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 row, col = get_row_col_from_mouse(pygame.mouse.get_pos())
                 game.select(row, col, mode)
-
         game.update()
     pygame.quit()
 

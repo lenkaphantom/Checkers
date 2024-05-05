@@ -5,7 +5,6 @@ from .piece import Piece
 class Board(object):
     def __init__(self):
         self.board = []
-        self.turn = 0
         self.brown_left = self.white_left = 12
         self.brown_queens = self.white_queens = 0
         self.create_board()
@@ -85,7 +84,7 @@ class Board(object):
                 
                 if last:
                     if step == -1:
-                        new_row = max(row - 3, 0)
+                        new_row = max(row - 3, -1)
                     else:
                         new_row = min(row + 3, ROWS)
                     moves.update(self.get_moves_left(row + step, new_row, step, color, left - 1, captured = last))
@@ -118,7 +117,7 @@ class Board(object):
                 
                 if last:
                     if step == -1:
-                        new_row = max(row - 3, 0)
+                        new_row = max(row - 3, -1)
                     else:
                         new_row = min(row + 3, ROWS)
                     moves.update(self.get_moves_left(row + step, new_row, step, color, right - 1, captured = last))
@@ -133,6 +132,14 @@ class Board(object):
         
         return moves
     
+    def has_valid_moves_for_color(self, color):
+        for row in range(ROWS):
+            for col in range(COLS):
+                piece = self.board[row][col]
+                if piece != 0 and piece.color == color:
+                    if self.get_valid_moves(piece):
+                        return True
+        return False
     
     def remove(self, pieces):
         for piece in pieces:
@@ -142,3 +149,14 @@ class Board(object):
                     self.brown_left -= 1
                 else:
                     self.white_left -= 1
+                    
+    def winner(self):
+        if self.brown_left <= 0:
+            return "WHITE"
+        elif self.white_left <= 0:
+            return "BROWN"
+        if not self.has_valid_moves_for_color(WHITE):
+            return "BROWN"
+        elif not self.has_valid_moves_for_color(BROWN):
+            return "WHITE"
+        return None

@@ -29,6 +29,7 @@ class Game(object):
             result = self._move(row, col)
             if not result:
                 self.selected = None
+                self.valid_moves = {}
                 self.select(row, col, mode)
         
         piece = self.board.get_piece(row, col)
@@ -75,3 +76,11 @@ class Game(object):
             self.turn = WHITE
         else:
             self.turn = BROWN
+    
+    def draw_winner(self):
+        self.win.fill(BEIGE)
+        winner = self.board.winner()
+        font = pygame.font.SysFont(None, 100)
+        text = font.render(f"{winner} Wins!", True, BROWN)
+        self.win.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2 - 100))
+        pygame.display.update()
