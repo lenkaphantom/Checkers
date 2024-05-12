@@ -6,7 +6,10 @@ from .board import Board
 
 class Game(object):
     def __init__(self, win, mode):
-        self._init()
+        self.selected = None
+        self.board = Board()
+        self.turn = BROWN
+        self.valid_moves = {}
         self.win = win
         self.mode = mode
 
@@ -14,15 +17,6 @@ class Game(object):
         self.board.draw(self.win)
         self.draw_valid_moves(self.valid_moves)
         pygame.display.update()
-
-    def _init(self):
-        self.selected = None
-        self.board = Board()
-        self.turn = BROWN
-        self.valid_moves = {}
-
-    def reset(self):
-        self._init()
 
     def select(self, row, col, mode):
         if self.selected:
@@ -52,7 +46,7 @@ class Game(object):
         
         return False
 
-    def _move(self, row, col):
+    def move(self, row, col):
         piece = self.board.get_piece(row, col)
         if self.selected and piece == 0 and (row, col) in self.valid_moves:
             self.board.move(self.selected, row, col)
