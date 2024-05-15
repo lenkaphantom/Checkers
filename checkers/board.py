@@ -1,5 +1,5 @@
 import pygame
-from .constants import ROWS, COLS, SQUARE_SIZE, BEIGE, BLACK, WHITE, BROWN, BLUE
+from .constants import ROWS, COLS, SQUARE_SIZE, BEIGE, BLACK, WHITE, BROWN, POINTS
 from .piece import Piece
 
 class Board(object):
@@ -149,3 +149,42 @@ class Board(object):
                     self.brown_left -= 1
                 else:
                     self.white_left -= 1
+
+    def count_edge_pieces(self):
+        white_count = 0
+        white_count_queens = 0
+        
+        brown_count = 0
+        brown_count_queens = 0
+
+        for row in range(ROWS):
+            for col in range(COLS):
+                if row == 0 or row == ROWS - 1 or col == 0 or col == COLS - 1:
+                    piece = self.board[row][col]
+                    if piece != 0 and piece.color == WHITE:
+                        white_count += 1
+                        if piece.queen:
+                            white_count_queens += 1
+                    elif piece != 0 and piece.color == BROWN:
+                        brown_count += 1
+                        if piece.queen:
+                            brown_count_queens += 1
+        return white_count, white_count_queens, brown_count, brown_count_queens
+
+    def evaluate_state(self):
+        white = self.white_left * POINTS['piece'] + self.white_queens * POINTS['queen']
+        brown = self.brown_left * POINTS['piece'] + self.brown_queens * POINTS['queen']
+
+        white_edge, white_queen_edge, brown_edge, brown_queen_edge = self.count_edge_pieces()
+
+        white += white_edge * POINTS['side_piece'] + white_queen_edge * POINTS['side_queen']
+        brown += brown_edge * POINTS['side_piece'] + brown_queen_edge * POINTS['side_queen']
+
+        return white - brown
+    
+    def evaluate_end_state(self):
+        if self.brown_left == 0:
+            return float('inf')
+        elif self.white_left == 0:
+            return float('-inf')
+        return 0

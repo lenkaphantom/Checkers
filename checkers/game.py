@@ -20,7 +20,7 @@ class Game(object):
 
     def select(self, row, col, mode):
         if self.selected:
-            result = self._move(row, col)
+            result = self.move(row, col)
             if not result:
                 self.selected = None
                 self.valid_moves = {}
