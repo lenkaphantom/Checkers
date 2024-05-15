@@ -1,6 +1,6 @@
 import pygame
-from .constants import ROWS, COLS, SQUARE_SIZE, BEIGE, BLACK, WHITE, BROWN, POINTS
-from .piece import Piece
+from constants import *
+from piece import Piece
 
 class Board(object):
     def __init__(self):
@@ -10,12 +10,18 @@ class Board(object):
         self.create_board()
 
     def draw_squares(self, win):
+        """
+        Funkcija koja boji polja u BEIGE.
+        """
         win.fill(BLACK)
         for row in range(ROWS):
             for col in range(row % 2, COLS, 2):
                 pygame.draw.rect(win, BEIGE, (row * SQUARE_SIZE, col * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
     def create_board(self):
+        """
+        Funkcija koja postavlja figure na tablu.
+        """
         for row in range(ROWS):
             self.board.append([])
             for col in range(COLS):
@@ -30,6 +36,9 @@ class Board(object):
                     self.board[row].append(0)
 
     def draw(self, win):
+        """
+        Funkcija koja iscrtava tablu na ekran.
+        """
         self.draw_squares(win)
         for row in range(ROWS):
             for col in range(COLS):
@@ -41,6 +50,12 @@ class Board(object):
         return self.board[row][col]
 
     def move(self, piece, row, col):
+        """
+        Funkcija koja pomera figuru u zadati red i kolonu.
+        - `piece`: figura koja se pomera
+        - `row`: red u koji se pomera
+        - `col`: colona u koju se pomera
+        """
         self.board[piece.row][piece.col], self.board[row][col] = self.board[row][col], self.board[piece.row][piece.col]
         piece.move(row, col)
 
@@ -52,6 +67,11 @@ class Board(object):
                 self.white_queens += 1
 
     def get_valid_moves(self, piece):
+        """
+        Funkcija vraca sve moguce poteze za odredjenu figuru.
+        Poziva pomocne funkcije get_moves_left i get_moves_right.
+        - `piece`: figura za koju se potezi dobavljaju
+        """
         moves = {}
         left = piece.col - 1
         right = piece.col + 1
@@ -67,6 +87,15 @@ class Board(object):
         return moves
     
     def get_moves_left(self, start, stop, step, color, left, captured = []):
+        """
+        Funkcija dobavlja poteze levo od pocetne figure.
+        - `start`: red od kojeg se krece
+        - `stop`: krajnji red
+        - `step`: korak kojim se krece kroz redove; moze biti +1, kretanje nagore, ili -1, kretanje nadole
+        - `color`: boja figure cije poteze dobavljamo
+        - `left`: kolona sa leve strane trenutne figure
+        - `captured`: lista figura koje se mogu pojedi u toku poteza
+        """
         moves = {}
         last = []
         for row in range(start, stop, step):
@@ -100,6 +129,15 @@ class Board(object):
         return moves
 
     def get_moves_right(self, start, stop, step, color, right, captured = []):
+        """
+        Funkcija dobavlja poteze desno od pocetne figure.
+        - `start`: red od kojeg se krece
+        - `stop`: krajnji red
+        - `step`: korak kojim se krece kroz redove; moze biti +1, kretanje nagore, ili -1, kretanje nadole
+        - `color`: boja figure cije poteze dobavljamo
+        - `right`: kolona sa desne strane trenutne figure
+        - `captured`: lista figura koje se mogu pojedi u toku poteza
+        """
         moves = {}
         last = []
         for row in range(start, stop, step):
@@ -132,16 +170,64 @@ class Board(object):
         
         return moves
     
-    def has_valid_moves_for_color(self, color):
+    def get_pieces_color(self, color):
+        pieces = []
         for row in range(ROWS):
             for col in range(COLS):
                 piece = self.board[row][col]
                 if piece != 0 and piece.color == color:
-                    if self.get_valid_moves(piece):
-                        return True
+                    pieces.append(piece)
+
+        return pieces
+    
+    def get_forced_valid_moves(self, color):
+        pieces = self.get_pieces_color(color)
+        moves_by_piece = {}
+        temp_moves = {}
+        any_captured = False
+
+        for piece in pieces:
+            temp_moves = {}
+            moves = self.get_valid_moves(piece)
+            values = moves.values()
+            captured = False
+            for value in values:
+                if value:
+                    captured = True
+                    any_captured = True
+                    break
+
+            if not any_captured:
+                continue
+            if any_captured and not captured:
+                continue
+            
+            for move in moves:
+                if not moves[move]:
+                    continue
+                temp_moves[move] = moves[move]
+            moves_by_piece[piece] = temp_moves
+        if moves_by_piece == {}:
+            return False
+        return moves_by_piece
+
+    
+    def has_valid_moves_for_color(self, color):
+        """
+        Funkcija koja vraca True ako postoji makar jedan potez za neku figuru zadate boje.
+        - `color`: boja za koju se proverava da li ima poteza
+        """
+        pieces = self.get_pieces_color(color)
+        for piece in pieces:
+            if self.get_valid_moves(piece):
+                return True
         return False
     
     def remove(self, pieces):
+        """
+        Uklanjanje liste figura sa table.
+        - `pieces`: lista figura za uklanjanje
+        """
         for piece in pieces:
             self.board[piece.row][piece.col] = 0
             if piece != 0:
@@ -151,6 +237,10 @@ class Board(object):
                     self.white_left -= 1
 
     def count_edge_pieces(self):
+        """
+        Funkcija koja prebrojava sve figure koje se nalaze na ivicama table.
+        Vraca broj belih figura, belih kraljica, braon figura i braon kraljica.
+        """
         white_count = 0
         white_count_queens = 0
         
@@ -172,6 +262,9 @@ class Board(object):
         return white_count, white_count_queens, brown_count, brown_count_queens
 
     def evaluate_state(self):
+        """
+        Heuristicka funkcija zasnovana na broju figura, broju kraljica, broju ivicnih figura i broju ivicnih kraljica.
+        """
         white = self.white_left * POINTS['piece'] + self.white_queens * POINTS['queen']
         brown = self.brown_left * POINTS['piece'] + self.brown_queens * POINTS['queen']
 
@@ -183,6 +276,9 @@ class Board(object):
         return white - brown
     
     def evaluate_end_state(self):
+        """
+        Heuristicka funkcija koja evaluira finalno stanje table.
+        """
         if self.brown_left == 0:
             return float('inf')
         elif self.white_left == 0:

@@ -1,6 +1,6 @@
 import pygame
-from checkers.constants import WIDTH, HEIGHT, SQUARE_SIZE, BROWN, BEIGE, WHITE
-from checkers.game import Game
+from constants import *
+from game import Game
 
 FPS = 60
 

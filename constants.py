@@ -12,13 +12,12 @@ BLUE = (0, 0, 220)
 BEIGE = (225, 225, 210)
 GREY = (128, 128, 128)
 
-CROWN = pygame.image.load('assets/crown.png')
+CROWN = pygame.image.load('crown.png')
 CROWN = pygame.transform.scale(CROWN, (44, 25))
 
 POINTS = {
     'piece': 1,
     'queen': 5,
     'side_piece': 2,
-    'side_queen': 10,
-    'move_piece': 1
+    'side_queen': 10
 }

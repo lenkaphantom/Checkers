@@ -1,8 +1,7 @@
 import pygame
 
-from .constants import *
-from .piece import Piece
-from .board import Board
+from constants import *
+from board import Board
 
 class Game(object):
     def __init__(self, win, mode):
@@ -14,11 +13,24 @@ class Game(object):
         self.mode = mode
 
     def update(self):
+        """
+        Funkcija koja azurira stanje table i koja iscrtava moguce poteze za figuru.
+        """
         self.board.draw(self.win)
         self.draw_valid_moves(self.valid_moves)
         pygame.display.update()
 
     def select(self, row, col, mode):
+        """
+        Funkcija koja selektovanu figuru, ako ona postoji, pomera u odgovarajuci red i kolonu.
+        Ako nije selektovana figura, selektuje se ona koja se nalazi u zadatom redu i koloni
+        ako na tom polju figura postoji i ako je iste boje kao igrac koji je na potezu.
+        Potom se odredjuju svi validni potezi za tu figuru u zavisnosti od rezima igre.
+
+        - `row`: red u kome se nalazi figura ili na koji figuru treba pomeriti
+        - `col`: kolona u kojoj se nalazi figura ili na koju figuru treba pomeriti
+        - `mode`: odabrani rezim igre
+        """
         if self.selected:
             result = self.move(row, col)
             if not result:
@@ -28,20 +40,15 @@ class Game(object):
         
         piece = self.board.get_piece(row, col)
         if piece != 0 and piece.color == self.turn:
-            valid_moves_temp = {}
             self.selected = piece
-            self.valid_moves = self.board.get_valid_moves(piece)
-            values = self.valid_moves.values()
-            captured = False
-            for value in values: 
-                if value:
-                    captured = True
-                    break
-            for move in self.valid_moves:
-                if mode == 1 and captured and not self.valid_moves[move]:
-                    continue
-                valid_moves_temp[move] = self.valid_moves[move]
-            self.valid_moves = valid_moves_temp
+            if mode == 1:
+                forced_moves = self.board.get_forced_valid_moves(piece.color)
+                if not forced_moves:
+                    self.valid_moves = self.board.get_valid_moves(piece)
+                elif piece in forced_moves:
+                    self.valid_moves = forced_moves[piece]
+            else:
+                self.valid_moves = self.board.get_valid_moves(piece)
             return True
         
         return False
