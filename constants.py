@@ -3,6 +3,8 @@ import pygame
 WIDTH, HEIGHT = 700, 700
 ROWS, COLS = 8, 8
 SQUARE_SIZE = WIDTH // COLS
+PADDING = 13
+BORDER = 2
 
 # RGB
 BLACK = (0, 0, 0)

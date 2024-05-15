@@ -171,6 +171,9 @@ class Board(object):
         return moves
     
     def get_pieces_color(self, color):
+        """
+        Funkcija vraca sve figure zadate boje.
+        """
         pieces = []
         for row in range(ROWS):
             for col in range(COLS):
@@ -181,6 +184,10 @@ class Board(object):
         return pieces
     
     def get_forced_valid_moves(self, color):
+        """
+        Funkcija vraca sve poteze koje obuhvataju jedenje protivnickih figura ako je moguce pojesti neku figuru.
+        - `color`: boja igraca za kojeg se dobavljaju potezi
+        """
         pieces = self.get_pieces_color(color)
         moves_by_piece = {}
         temp_moves = {}

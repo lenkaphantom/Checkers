@@ -54,6 +54,15 @@ class Game(object):
         return False
 
     def move(self, row, col):
+        """
+        Funkcija koja pomera figuru na odgovarajuce polje.
+        Ako je potez validan, figura se pomera na to polje i proverava se da li je neka figura pojedena.
+        Ako je neka figura pojedena, ona se uklanja sa table.
+        Na kraju se menja igrac koji je na potezu.
+
+        - `row`: red na koji se figura pomera
+        - `col`: kolona na koju se figura pomera
+        """
         piece = self.board.get_piece(row, col)
         if self.selected and piece == 0 and (row, col) in self.valid_moves:
             self.board.move(self.selected, row, col)
@@ -67,11 +76,19 @@ class Game(object):
         return True
     
     def draw_valid_moves(self, moves): 
+        """
+        Funkcija koja iscrtava moguce poteze za figuru.
+
+        - `moves`: lista mogucih poteza
+        """
         for move in moves:
             row, col = move
             pygame.draw.circle(self.win, BLUE, (col * SQUARE_SIZE + SQUARE_SIZE // 2, row * SQUARE_SIZE + SQUARE_SIZE // 2), 15)
     
     def change_turn(self):
+        """
+        Funkcija koja menja igraca koji je na potezu.
+        """
         self.valid_moves = {}
         if self.turn == BROWN:
             self.turn = WHITE
@@ -79,6 +96,9 @@ class Game(object):
             self.turn = BROWN
             
     def winner(self):
+        """
+        Funkcija koja proverava da li je neki igrac pobedio.
+        """
         if self.board.brown_left <= 0:
             return "WHITE"
         elif self.board.white_left <= 0:
@@ -91,6 +111,9 @@ class Game(object):
         return None
     
     def draw_winner(self):
+        """
+        Funkcija koja ispisuje pobednika na ekranu.
+        """
         self.win.fill(BEIGE)
         winner = self.winner()
         font = pygame.font.SysFont(None, 100)
