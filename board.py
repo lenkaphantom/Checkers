@@ -76,20 +76,20 @@ class Board(object):
         left = piece.col - 1
         right = piece.col + 1
         row = piece.row
-        queen = False
-        if piece.queen:
-            queen = True
 
-        if piece.color == BROWN or queen:
-            moves.update(self.get_moves_left(row - 1, max(row - 3, -1), -1, piece.color, left, queen))
-            moves.update(self.get_moves_right(row - 1, max(row - 3, -1), -1, piece.color, right, queen))
-        if piece.color == WHITE or queen:
-            moves.update(self.get_moves_left(row + 1, min(row + 3, ROWS), 1, piece.color, left, queen))
-            moves.update(self.get_moves_right(row + 1, min(row + 3, ROWS), 1, piece.color, right, queen))
+        if piece.queen:
+            return self.get_valid_moves_queen(piece)
+
+        if piece.color == BROWN:
+            moves.update(self.get_moves_left(row - 1, max(row - 3, -1), -1, piece.color, left))
+            moves.update(self.get_moves_right(row - 1, max(row - 3, -1), -1, piece.color, right))
+        if piece.color == WHITE:
+            moves.update(self.get_moves_left(row + 1, min(row + 3, ROWS), 1, piece.color, left))
+            moves.update(self.get_moves_right(row + 1, min(row + 3, ROWS), 1, piece.color, right))
 
         return moves
     
-    def get_moves_left(self, start, stop, step, color, left, queen, captured = []):
+    def get_moves_left(self, start, stop, step, color, left, captured = []):
         """
         Funkcija dobavlja poteze levo od pocetne figure.
         - `start`: red od kojeg se krece
@@ -119,15 +119,8 @@ class Board(object):
                         new_row = max(row - 3, -1)
                     else:
                         new_row = min(row + 3, ROWS)
-                    moves.update(self.get_moves_left(row + step, new_row, step, color, left - 1, queen, captured = last))
-                    moves.update(self.get_moves_right(row + step, new_row, step, color, left + 1, queen, captured = last))
-                    if queen:
-                        if step == -1:
-                            new_row_backward = min(row + 3, ROWS)
-                        else:
-                            new_row_backward = max(row - 3, -1)
-                        moves.update(self.get_moves_left(row - step, new_row_backward, -step, color, left - 1, queen, captured = last))
-                        moves.update(self.get_moves_right(row - step, new_row_backward, -step, color, left + 1, queen, captured = last))
+                    moves.update(self.get_moves_left(row + step, new_row, step, color, left - 1, captured = last))
+                    moves.update(self.get_moves_right(row + step, new_row, step, color, left + 1, captured = last))
                 break
             elif current.color == color:
                 break
@@ -138,7 +131,7 @@ class Board(object):
         
         return moves
 
-    def get_moves_right(self, start, stop, step, color, right, queen, captured = []):
+    def get_moves_right(self, start, stop, step, color, right, captured = []):
         """
         Funkcija dobavlja poteze desno od pocetne figure.
         - `start`: red od kojeg se krece
@@ -168,15 +161,8 @@ class Board(object):
                         new_row = max(row - 3, -1)
                     else:
                         new_row = min(row + 3, ROWS)
-                    moves.update(self.get_moves_left(row + step, new_row, step, color, right - 1, queen, captured = last))
-                    moves.update(self.get_moves_right(row + step, new_row, step, color, right + 1, queen, captured = last))
-                    if queen:
-                        if step == -1:
-                            new_row_backward = min(row + 3, ROWS)
-                        else:
-                            new_row_backward = max(row - 3, -1)
-                        moves.update(self.get_moves_left(row - step, new_row_backward, -step, color, right - 1, queen, captured = last))
-                        moves.update(self.get_moves_right(row - step, new_row_backward, -step, color, right + 1, queen, captured = last))
+                    moves.update(self.get_moves_left(row + step, new_row, step, color, right - 1, captured = last))
+                    moves.update(self.get_moves_right(row + step, new_row, step, color, right + 1, captured = last))
                 break
             elif current.color == color:
                 break
@@ -184,6 +170,50 @@ class Board(object):
                 last = [current]
 
             right += 1
+        
+        return moves
+    
+    def get_valid_moves_queen(self, piece):
+        moves = {}
+        directions = [(1, -1), (1, 1), (-1, -1), (-1, 1)]
+        
+        for direction in directions:
+            moves.update(self.get_moves_queen(piece, direction))
+        
+        return moves
+
+    def get_moves_queen(self, piece, direction):
+        moves = {}
+        row, col = piece.row, piece.col
+        color = piece.color
+        
+        for i in range(1, ROWS):
+            new_row = row + direction[0] * i
+            new_col = col + direction[1] * i
+            
+            if 0 <= new_row < ROWS and 0 <= new_col < COLS:
+                current_piece = self.board[new_row][new_col]
+                
+                if current_piece == 0:
+                    if not moves:
+                        moves[(new_row, new_col)] = []
+                    else:
+                        break
+                elif current_piece.color != color:
+                    next_row = new_row + direction[0]
+                    next_col = new_col + direction[1]
+                    
+                    if 0 <= next_row < ROWS and 0 <= next_col < COLS and self.board[next_row][next_col] == 0:
+                        moves[(next_row, next_col)] = [(new_row, new_col)]
+                        sub_moves = self.get_moves_queen(current_piece, direction)
+                        for key, value in sub_moves.items():
+                            moves[key] = value
+                    else:
+                        break
+                else:
+                    break
+            else:
+                break
         
         return moves
     
