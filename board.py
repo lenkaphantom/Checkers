@@ -76,17 +76,20 @@ class Board(object):
         left = piece.col - 1
         right = piece.col + 1
         row = piece.row
+        queen = False
+        if piece.queen:
+            queen = True
 
-        if piece.color == BROWN or piece.queen:
-            moves.update(self.get_moves_left(row - 1, max(row - 3, -1), -1, piece.color, left))
-            moves.update(self.get_moves_right(row - 1, max(row - 3, -1), -1, piece.color, right))
-        if piece.color == WHITE or piece.queen:
-            moves.update(self.get_moves_left(row + 1, min(row + 3, ROWS), 1, piece.color, left))
-            moves.update(self.get_moves_right(row + 1, min(row + 3, ROWS), 1, piece.color, right))
+        if piece.color == BROWN or queen:
+            moves.update(self.get_moves_left(row - 1, max(row - 3, -1), -1, piece.color, left, queen))
+            moves.update(self.get_moves_right(row - 1, max(row - 3, -1), -1, piece.color, right, queen))
+        if piece.color == WHITE or queen:
+            moves.update(self.get_moves_left(row + 1, min(row + 3, ROWS), 1, piece.color, left, queen))
+            moves.update(self.get_moves_right(row + 1, min(row + 3, ROWS), 1, piece.color, right, queen))
 
         return moves
     
-    def get_moves_left(self, start, stop, step, color, left, captured = []):
+    def get_moves_left(self, start, stop, step, color, left, queen, captured = []):
         """
         Funkcija dobavlja poteze levo od pocetne figure.
         - `start`: red od kojeg se krece
@@ -116,8 +119,15 @@ class Board(object):
                         new_row = max(row - 3, -1)
                     else:
                         new_row = min(row + 3, ROWS)
-                    moves.update(self.get_moves_left(row + step, new_row, step, color, left - 1, captured = last))
-                    moves.update(self.get_moves_right(row + step, new_row, step, color, left + 1, captured = last))
+                    moves.update(self.get_moves_left(row + step, new_row, step, color, left - 1, queen, captured = last))
+                    moves.update(self.get_moves_right(row + step, new_row, step, color, left + 1, queen, captured = last))
+                    if queen:
+                        if step == -1:
+                            new_row_backward = min(row + 3, ROWS)
+                        else:
+                            new_row_backward = max(row - 3, -1)
+                        moves.update(self.get_moves_left(row - step, new_row_backward, -step, color, left - 1, queen, captured = last))
+                        moves.update(self.get_moves_right(row - step, new_row_backward, -step, color, left + 1, queen, captured = last))
                 break
             elif current.color == color:
                 break
@@ -128,7 +138,7 @@ class Board(object):
         
         return moves
 
-    def get_moves_right(self, start, stop, step, color, right, captured = []):
+    def get_moves_right(self, start, stop, step, color, right, queen, captured = []):
         """
         Funkcija dobavlja poteze desno od pocetne figure.
         - `start`: red od kojeg se krece
@@ -158,8 +168,15 @@ class Board(object):
                         new_row = max(row - 3, -1)
                     else:
                         new_row = min(row + 3, ROWS)
-                    moves.update(self.get_moves_left(row + step, new_row, step, color, right - 1, captured = last))
-                    moves.update(self.get_moves_right(row + step, new_row, step, color, right + 1, captured = last))
+                    moves.update(self.get_moves_left(row + step, new_row, step, color, right - 1, queen, captured = last))
+                    moves.update(self.get_moves_right(row + step, new_row, step, color, right + 1, queen, captured = last))
+                    if queen:
+                        if step == -1:
+                            new_row_backward = min(row + 3, ROWS)
+                        else:
+                            new_row_backward = max(row - 3, -1)
+                        moves.update(self.get_moves_left(row - step, new_row_backward, -step, color, right - 1, queen, captured = last))
+                        moves.update(self.get_moves_right(row - step, new_row_backward, -step, color, right + 1, queen, captured = last))
                 break
             elif current.color == color:
                 break
