@@ -1,6 +1,7 @@
 import pygame
 from constants import *
 from game import Game
+from algorithm import alpha_beta_pruning
 
 FPS = 60
 
@@ -69,6 +70,10 @@ def main():
 
     while run:
         clock.tick(FPS)
+
+        if game.turn == WHITE:
+            new_board = alpha_beta_pruning(game.board, 4)
+            game.ai_move(new_board)
         
         if game.winner() is not None:
             game.draw_winner()

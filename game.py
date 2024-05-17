@@ -99,16 +99,7 @@ class Game(object):
         """
         Funkcija koja proverava da li je neki igrac pobedio.
         """
-        if self.board.brown_left <= 0:
-            return "WHITE"
-        elif self.board.white_left <= 0:
-            return "BROWN"
-        if not self.board.has_valid_moves_for_color(self.turn):
-            if self.turn == BROWN:
-                return "WHITE"
-            else:
-                return "BROWN"
-        return None
+        return self.board.winner(self.turn)
     
     def draw_winner(self):
         """
@@ -120,3 +111,10 @@ class Game(object):
         text = font.render(f"{winner} Wins!", True, GREY)
         self.win.blit(text, ((WIDTH - text.get_width()) // 2, (HEIGHT - text.get_height()) // 2))
         pygame.display.update()
+
+    def ai_move(self, new_board):
+        """
+        Funkcija koja pomera figuru na odgovarajuce polje u zavisnosti od odabrane strategije.
+        """
+        self.board = new_board
+        self.change_turn()
