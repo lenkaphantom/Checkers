@@ -94,19 +94,13 @@ class Game(object):
             self.turn = WHITE
         else:
             self.turn = BROWN
-            
-    def winner(self):
-        """
-        Funkcija koja proverava da li je neki igrac pobedio.
-        """
-        return self.board.winner(self.turn)
     
     def draw_winner(self):
         """
         Funkcija koja ispisuje pobednika na ekranu.
         """
         self.win.fill(BEIGE)
-        winner = self.winner()
+        winner = self.board.game_over(self.turn)
         font = pygame.font.SysFont(None, 100)
         text = font.render(f"{winner} Wins!", True, GREY)
         self.win.blit(text, ((WIDTH - text.get_width()) // 2, (HEIGHT - text.get_height()) // 2))

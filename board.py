@@ -1,3 +1,4 @@
+from typing import Any
 import pygame
 from constants import *
 from piece import Piece
@@ -8,6 +9,30 @@ class Board(object):
         self.brown_left = self.white_left = 12
         self.brown_queens = self.white_queens = 0
         self.create_board()
+        
+    def __str__(self):
+        """
+        Funkcija koja vraca string reprezentaciju table.
+        """
+        string = ""
+        for row in range(ROWS):
+            for col in range(COLS):
+                piece = self.board[row][col]
+                if piece == 0:
+                    string += "0"
+                else:
+                    if piece.color == BROWN:
+                        if piece.queen:
+                            string += "B"
+                        else:
+                            string += "b"
+                    else:
+                        if piece.queen:
+                            string += "W"
+                        else:
+                            string += "w"
+            string += "\n"
+        return string
 
     def draw_squares(self, win):
         """
@@ -292,17 +317,17 @@ class Board(object):
             return float('-inf')
         return 0
     
-    def winner(self, color):
+    def game_over(self, turn):
         """
-        Funkcija koja proverava da li je neki igrac pobedio.
+        Funkcija koja proverava da li je igra zavrsena.
         """
         if self.brown_left <= 0:
-            return "WHITE"
+            return WHITE
         elif self.white_left <= 0:
-            return "BROWN"
-        if not self.has_valid_moves_for_color(color):
-            if color == BROWN:
-                return "WHITE"
+            return BROWN
+        if not self.has_valid_moves_for_color(turn):
+            if turn == BROWN:
+                return WHITE
             else:
-                return "BROWN"
+                return BROWN
         return None

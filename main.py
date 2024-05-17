@@ -72,10 +72,10 @@ def main():
         clock.tick(FPS)
 
         if game.turn == WHITE:
-            new_board = alpha_beta_pruning(game.board, 4)
+            new_board = alpha_beta_pruning(game.board, 4, game.turn)
             game.ai_move(new_board)
         
-        if game.winner() is not None:
+        if game.board.game_over(game.turn) is not None:
             game.draw_winner()
             pygame.time.delay(3000)
             run = False
