@@ -72,7 +72,7 @@ def main():
         clock.tick(FPS)
 
         if game.turn == WHITE:
-            new_board = alpha_beta_pruning(game.board, 4, game.turn)
+            new_board = alpha_beta_pruning(game.board, 3, game.turn)
             game.ai_move(new_board)
         
         if game.board.game_over(game.turn) is not None:
