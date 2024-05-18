@@ -322,12 +322,12 @@ class Board(object):
         Funkcija koja proverava da li je igra zavrsena.
         """
         if self.brown_left <= 0:
-            return WHITE
+            return "WHITE"
         elif self.white_left <= 0:
-            return BROWN
+            return "BROWN"
         if not self.has_valid_moves_for_color(turn):
             if turn == BROWN:
-                return WHITE
+                return "WHITE"
             else:
-                return BROWN
+                return "BROWN"
         return None

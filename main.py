@@ -72,8 +72,8 @@ def main():
         clock.tick(FPS)
 
         if game.turn == WHITE:
-            new_board = alpha_beta_pruning(game.board, 3, game.turn)
-            game.ai_move(new_board)
+            best_move = alpha_beta_pruning(game.board, 6, game.turn)
+            game.ai_move(best_move)
         
         if game.board.game_over(game.turn) is not None:
             game.draw_winner()
