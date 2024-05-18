@@ -21,5 +21,6 @@ POINTS = {
     'piece': 1,
     'queen': 5,
     'side_piece': 2,
-    'side_queen': 10
+    'side_queen': 10,
+    'middle_queen': 15
 }
