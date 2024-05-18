@@ -270,34 +270,42 @@ class Board(object):
 
     def count_edge_pieces_and_middle(self):
         """
-        Funkcija koja prebrojava sve figure koje se nalaze na ivicama table, kao i one koje se nalaze u sredini.
-        Vraca broj belih figura, belih kraljica, braon figura i braon kraljica.
+        Funkcija koja broji figure koje se nalaze na ivicama table, kao i kraljice koje se nalaze u sredini table.
         """
         white_count = 0
         white_count_queens = 0
+        white_count_middle = 0
         white_count_queens_middle = 0
         
         brown_count = 0
         brown_count_queens = 0
+        brown_count_middle = 0
         brown_count_queens_middle = 0
 
         for row in range(ROWS):
             for col in range(COLS):
-                if row == 0 or row == ROWS - 1 or col == 0 or col == COLS - 1:
-                    piece = self.board[row][col]
-                    if piece != 0 and piece.color == WHITE:
-                        white_count += 1
-                        if piece.queen:
-                            white_count_queens += 1
-                            if 2 <= row <= 5 and 2 <= col <= 5:
+                piece = self.board[row][col]
+                if piece != 0:
+                    if row <= 1 or row >= ROWS - 2 or col <= 1 or col >= COLS - 2:
+                        if piece.color == WHITE:
+                            white_count += 1
+                            if piece.queen:
+                                white_count_queens += 1
+                        elif piece.color == BROWN:
+                            brown_count += 1
+                            if piece.queen:
+                                brown_count_queens += 1
+                    if 2 <= row <= 5 and 2 <= col <= 5:
+                        if piece.color == WHITE:
+                            white_count_middle += 1
+                            if piece.queen:
                                 white_count_queens_middle += 1
-                    elif piece != 0 and piece.color == BROWN:
-                        brown_count += 1
-                        if piece.queen:
-                            brown_count_queens += 1
-                            if 2 <= row <= 5 and 2 <= col <= 5:
+                        elif piece.color == BROWN:
+                            brown_count_middle += 1
+                            if piece.queen:
                                 brown_count_queens_middle += 1
-        return white_count, white_count_queens, white_count_queens_middle, brown_count, brown_count_queens, brown_count_queens_middle
+                            
+        return white_count, white_count_queens, white_count_middle, white_count_queens_middle, brown_count, brown_count_queens, brown_count_middle, brown_count_queens_middle
 
     def evaluate_state(self):
         """
@@ -306,10 +314,10 @@ class Board(object):
         white = self.white_left * POINTS['piece'] + self.white_queens * POINTS['queen']
         brown = self.brown_left * POINTS['piece'] + self.brown_queens * POINTS['queen']
 
-        white_edge, white_queen_edge, white_queen_middle, brown_edge, brown_queen_edge, brown_queen_middle = self.count_edge_pieces_and_middle()
+        white_edge, white_queen_edge, white_middle, white_queen_middle, brown_edge, brown_queen_edge, brown_middle, brown_queen_middle = self.count_edge_pieces_and_middle()
 
-        white += white_edge * POINTS['side_piece'] + white_queen_edge * POINTS['side_queen'] + white_queen_middle * POINTS['middle_queen']
-        brown += brown_edge * POINTS['side_piece'] + brown_queen_edge * POINTS['side_queen'] + brown_queen_middle * POINTS['middle_queen']
+        white += white_edge * POINTS['side_piece'] + white_queen_edge * POINTS['side_queen'] + white_middle * POINTS['middle_piece'] + white_queen_middle * POINTS['middle_queen']
+        brown += brown_edge * POINTS['side_piece'] + brown_queen_edge * POINTS['side_queen'] + brown_middle * POINTS['middle_piece'] + brown_queen_middle * POINTS['middle_queen']
 
         return white - brown
     

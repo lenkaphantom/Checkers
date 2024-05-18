@@ -20,7 +20,8 @@ CROWN = pygame.transform.scale(CROWN, (44, 25))
 POINTS = {
     'piece': 1,
     'queen': 5,
-    'side_piece': 2,
-    'side_queen': 10,
-    'middle_queen': 15
+    'side_piece': 3,
+    'side_queen': 15,
+    'middle_piece': 4,
+    'middle_queen': 20
 }
