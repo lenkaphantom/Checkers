@@ -9,7 +9,7 @@ def alpha_beta_pruning(board, depth, turn):
         if maximizing_player:
             value = float('-inf')
             best_move = None
-            for state in get_states(board, turn):
+            for state in get_states(board, WHITE):
                 new_value, _ = alpha_beta(state[0], depth - 1, alpha, beta, False)
                 if new_value > value:
                     value = new_value
@@ -21,7 +21,7 @@ def alpha_beta_pruning(board, depth, turn):
         else:
             value = float('inf')
             best_move = None
-            for state in get_states(board, turn):
+            for state in get_states(board, BROWN):
                 new_value, _ = alpha_beta(state[0], depth - 1, alpha, beta, True)
                 if new_value < value:
                     value = new_value
@@ -31,7 +31,7 @@ def alpha_beta_pruning(board, depth, turn):
                     break
             return value, best_move
 
-    _, best_move = alpha_beta(board, depth, float('-inf'), float('inf'), turn == BROWN)
+    _, best_move = alpha_beta(board, depth, float('-inf'), float('inf'), turn == WHITE)
     return best_move
 
 def get_states(board, turn):
