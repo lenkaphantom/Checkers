@@ -268,68 +268,115 @@ class Board(object):
                 else:
                     self.white_left -= 1
 
-    def count_edge_pieces_and_middle(self):
-        """
-        Funkcija koja broji figure koje se nalaze na ivicama table, kao i kraljice koje se nalaze u sredini table.
-        """
-        white_count = 0
-        white_count_queens = 0
-        white_count_middle = 0
-        white_count_queens_middle = 0
+    # def count_edge_pieces_and_middle(self):
+    #     """
+    #     Funkcija koja broji figure koje se nalaze na ivicama table, kao i kraljice koje se nalaze u sredini table.
+    #     """
+    #     white_count = 0
+    #     white_count_queens = 0
+    #     white_count_middle = 0
+    #     white_count_queens_middle = 0
         
-        brown_count = 0
-        brown_count_queens = 0
-        brown_count_middle = 0
-        brown_count_queens_middle = 0
+    #     brown_count = 0
+    #     brown_count_queens = 0
+    #     brown_count_middle = 0
+    #     brown_count_queens_middle = 0
+
+    #     for row in range(ROWS):
+    #         for col in range(COLS):
+    #             piece = self.board[row][col]
+    #             if piece != 0:
+    #                 if row <= 1 or row >= ROWS - 2 or col <= 1 or col >= COLS - 2:
+    #                     if piece.color == WHITE:
+    #                         white_count += 1
+    #                         if piece.queen:
+    #                             white_count_queens += 1
+    #                     elif piece.color == BROWN:
+    #                         brown_count += 1
+    #                         if piece.queen:
+    #                             brown_count_queens += 1
+    #                 if 2 <= row <= 5 and 2 <= col <= 5:
+    #                     if piece.color == WHITE:
+    #                         white_count_middle += 1
+    #                         if piece.queen:
+    #                             white_count_queens_middle += 1
+    #                     elif piece.color == BROWN:
+    #                         brown_count_middle += 1
+    #                         if piece.queen:
+    #                             brown_count_queens_middle += 1
+                            
+    #     return white_count, white_count_queens, white_count_middle, white_count_queens_middle, brown_count, brown_count_queens, brown_count_middle, brown_count_queens_middle
+
+    # def evaluate_state(self):
+    #     """
+    #     Heuristicka funkcija zasnovana na broju figura, broju kraljica, broju ivicnih figura i broju ivicnih kraljica.
+    #     """
+    #     white = self.white_left * POINTS['piece'] + self.white_queens * POINTS['queen']
+    #     brown = self.brown_left * POINTS['piece'] + self.brown_queens * POINTS['queen']
+
+    #     white_edge, white_queen_edge, white_middle, white_queen_middle, brown_edge, brown_queen_edge, brown_middle, brown_queen_middle = self.count_edge_pieces_and_middle()
+
+    #     white += white_edge * POINTS['side_piece'] + white_queen_edge * POINTS['side_queen'] + white_middle * POINTS['middle_piece'] + white_queen_middle * POINTS['middle_queen']
+    #     brown += brown_edge * POINTS['side_piece'] + brown_queen_edge * POINTS['side_queen'] + brown_middle * POINTS['middle_piece'] + brown_queen_middle * POINTS['middle_queen']
+
+    #     return white - brown
+    
+    def evaluate_state(self):
+        if self.brown_left + self.white_left >= 17:
+            return self.evaluate_state_with_weights(10, 50, 3, 15, 10, 5, 10)
+        elif self.brown_left + self.white_left >= 10:
+            return self.evaluate_state_with_weights(10, 50, 10, 15, 10, 7, 10)
+        else:
+            return self.evaluate_state_with_weights(10, 50, 10, 3, 3, 7, 5)
+        
+    def evaluate_state_with_weights(self, piece_weight, queen_weight, edge_bonus, center_bonus,
+                                mobility_bonus, protected_bonus, attack_bonus):
+        brown_score = 0
+        white_score = 0
 
         for row in range(ROWS):
             for col in range(COLS):
-                piece = self.board[row][col]
-                if piece != 0:
-                    if row <= 1 or row >= ROWS - 2 or col <= 1 or col >= COLS - 2:
-                        if piece.color == WHITE:
-                            white_count += 1
-                            if piece.queen:
-                                white_count_queens += 1
-                        elif piece.color == BROWN:
-                            brown_count += 1
-                            if piece.queen:
-                                brown_count_queens += 1
-                    if 2 <= row <= 5 and 2 <= col <= 5:
-                        if piece.color == WHITE:
-                            white_count_middle += 1
-                            if piece.queen:
-                                white_count_queens_middle += 1
-                        elif piece.color == BROWN:
-                            brown_count_middle += 1
-                            if piece.queen:
-                                brown_count_queens_middle += 1
-                            
-        return white_count, white_count_queens, white_count_middle, white_count_queens_middle, brown_count, brown_count_queens, brown_count_middle, brown_count_queens_middle
+                piece = self.get_piece(row, col)
+                if piece == 0:
+                    continue
+                
+                piece_value = 0
+                
+                if piece.queen:
+                    piece_value += queen_weight
+                else:
+                    piece_value += piece_weight
+                
+                if row == 0 or row == ROWS - 1 or col == 0 or col == COLS - 1:
+                    piece_value += edge_bonus
+                if 2 <= row <= 5 and 2 <= col <= 5:
+                    piece_value += center_bonus
 
-    def evaluate_state(self):
-        """
-        Heuristicka funkcija zasnovana na broju figura, broju kraljica, broju ivicnih figura i broju ivicnih kraljica.
-        """
-        white = self.white_left * POINTS['piece'] + self.white_queens * POINTS['queen']
-        brown = self.brown_left * POINTS['piece'] + self.brown_queens * POINTS['queen']
+                valid_moves = self.get_valid_moves(piece)
+                piece_value += mobility_bonus * len(valid_moves)
+                for move, capture in valid_moves.items():
+                    if capture:
+                        piece_value += attack_bonus
 
-        white_edge, white_queen_edge, white_middle, white_queen_middle, brown_edge, brown_queen_edge, brown_middle, brown_queen_middle = self.count_edge_pieces_and_middle()
+                if self.is_protected(piece):
+                    piece_value += protected_bonus
+                
+                if piece.color == BROWN:
+                    brown_score += piece_value
+                else:
+                    white_score += piece_value
 
-        white += white_edge * POINTS['side_piece'] + white_queen_edge * POINTS['side_queen'] + white_middle * POINTS['middle_piece'] + white_queen_middle * POINTS['middle_queen']
-        brown += brown_edge * POINTS['side_piece'] + brown_queen_edge * POINTS['side_queen'] + brown_middle * POINTS['middle_piece'] + brown_queen_middle * POINTS['middle_queen']
+        return white_score - brown_score
 
-        return white - brown
-    
-    def evaluate_end_state(self):
-        """
-        Heuristicka funkcija koja evaluira finalno stanje table.
-        """
-        if self.brown_left == 0:
-            return float('inf')
-        elif self.white_left == 0:
-            return float('-inf')
-        return 0
+    def is_protected(self, piece):
+        directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+        for direction in directions:
+            row, col = piece.row + direction[0], piece.col + direction[1]
+            if 0 <= row < ROWS and 0 <= col < COLS:
+                neighbor = self.get_piece(row, col)
+                if neighbor and neighbor.color == piece.color:
+                    return True
+        return False
     
     def game_over(self, turn):
         """
