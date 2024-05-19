@@ -322,15 +322,16 @@ class Board(object):
     #     return white - brown
     
     def evaluate_state(self):
-        if self.brown_left + self.white_left >= 17:
-            return self.evaluate_state_with_weights(10, 50, 3, 15, 10, 5, 10)
-        elif self.brown_left + self.white_left >= 10:
-            return self.evaluate_state_with_weights(10, 50, 10, 15, 10, 7, 10)
+        total_pieces = self.brown_left + self.white_left
+        if total_pieces >= 17:
+            return self.evaluate_state_with_weights(20, 70, 40, 6, 10, 16)
+        elif total_pieces >= 10:
+            return self.evaluate_state_with_weights(20, 70, 30, 8, 14, 20)
         else:
-            return self.evaluate_state_with_weights(10, 50, 10, 3, 3, 7, 5)
-        
-    def evaluate_state_with_weights(self, piece_weight, queen_weight, edge_bonus, center_bonus,
-                                mobility_bonus, protected_bonus, attack_bonus):
+            return self.evaluate_state_with_weights(20, 70, 20, 10, 20, 24)
+
+    def evaluate_state_with_weights(self, piece_weight, queen_weight, center_bonus, mobility_bonus,
+                                    protected_bonus, attack_bonus):
         brown_score = 0
         white_score = 0
 
@@ -347,8 +348,6 @@ class Board(object):
                 else:
                     piece_value += piece_weight
                 
-                if row == 0 or row == ROWS - 1 or col == 0 or col == COLS - 1:
-                    piece_value += edge_bonus
                 if 2 <= row <= 5 and 2 <= col <= 5:
                     piece_value += center_bonus
 
