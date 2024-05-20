@@ -338,10 +338,21 @@ class Board(object):
                             
         return white_count, white_count_queens, white_count_middle, white_count_queens_middle, brown_count, brown_count_queens, brown_count_middle, brown_count_queens_middle
 
-    def evaluate_state(self):
+    def evaluate_state(self, maximazing_player):
         """
         Heuristicka funkcija zasnovana na broju figura, broju kraljica, broju ivicnih figura i broju ivicnih kraljica.
         """
+        if maximazing_player:
+            if self.game_over(WHITE) == "WHITE":
+                return float('inf')
+            elif self.game_over(WHITE) == "BROWN":
+                return float('-inf')
+        else:
+            if self.game_over(BROWN) == "BROWN":
+                return float('-inf')
+            elif self.game_over(BROWN) == "WHITE":
+                return float('inf')
+        
         white = self.white_left * POINTS['piece'] + self.white_queens * POINTS['queen']
         brown = self.brown_left * POINTS['piece'] + self.brown_queens * POINTS['queen']
 
