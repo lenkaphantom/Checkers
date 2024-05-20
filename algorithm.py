@@ -2,48 +2,59 @@ import time
 from copy import deepcopy
 from constants import BROWN, WHITE
 
+transposition_table = {}
+
 def alpha_beta_pruning(board, depth, turn, mode):
     start_time = time.time()
     time_limit = 2.7
 
-    def alpha_beta(board, depth, alpha, beta, maximizing_player, mode):
+    def alpha_beta(board, depth, alpha, beta, maximizing_player):
         if time.time() - start_time > time_limit:
             return board.evaluate_state(maximizing_player), board
 
         if depth == 0 or board.game_over(turn):
             return board.evaluate_state(maximizing_player), board
-        
+
+        board.get_zobrist_key()
+        zobrist_key = board.zobrist_key
+
+        if zobrist_key in transposition_table:
+            return transposition_table[zobrist_key]
+
         if maximizing_player:
             value = float('-inf')
             best_move = None
-            for state in get_states(board, maximizing_player, mode):
-                new_value, _ = alpha_beta(state[0], depth - 1, alpha, beta, False, mode)
+            for state in get_states(board, WHITE, mode):
+                new_value, _ = alpha_beta(state[0], depth - 1, alpha, beta, False)
                 if new_value > value:
                     value = new_value
                     best_move = state[0]
                 alpha = max(alpha, value)
                 if alpha >= beta:
                     break
+            transposition_table[zobrist_key] = (value, best_move)
             return value, best_move
         else:
             value = float('inf')
             best_move = None
-            for state in get_states(board, maximizing_player, mode):
-                new_value, _ = alpha_beta(state[0], depth - 1, alpha, beta, True, mode)
+            for state in get_states(board, BROWN, mode):
+                new_value, _ = alpha_beta(state[0], depth - 1, alpha, beta, True)
                 if new_value < value:
                     value = new_value
                     best_move = state[0]
                 beta = min(beta, value)
                 if alpha >= beta:
                     break
+            transposition_table[zobrist_key] = (value, best_move)
             return value, best_move
 
-    _, best_move = alpha_beta(board, depth, float('-inf'), float('inf'), turn == WHITE, mode)
+    _, best_move = alpha_beta(board, depth, float('-inf'), float('inf'), turn == WHITE)
 
     end_time = time.time()
     print(f"Time taken: {end_time - start_time}")
 
     return best_move
+
 
 def get_states(board, maximizing_player, mode):
     states = []
