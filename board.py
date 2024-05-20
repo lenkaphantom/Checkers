@@ -94,7 +94,7 @@ class Board(object):
     def get_valid_moves(self, piece):
         """
         Funkcija vraca sve moguce poteze za odredjenu figuru.
-        Poziva pomocne funkcije get_moves_left i get_moves_right.
+        Koristi pomocnu funkciju get_moves.
         - `piece`: figura za koju se potezi dobavljaju
         """
         moves = {}
@@ -103,95 +103,54 @@ class Board(object):
         row = piece.row
 
         if piece.color == BROWN or piece.queen:
-            moves.update(self.get_moves_left(row - 1, max(row - 3, -1), -1, piece.color, left))
-            moves.update(self.get_moves_right(row - 1, max(row - 3, -1), -1, piece.color, right))
+            moves.update(self.get_moves(row - 1, max(row - 3, -1), -1, piece.color, -1, left))
+            moves.update(self.get_moves(row - 1, max(row - 3, -1), -1, piece.color, 1, right))
         if piece.color == WHITE or piece.queen:
-            moves.update(self.get_moves_left(row + 1, min(row + 3, ROWS), 1, piece.color, left))
-            moves.update(self.get_moves_right(row + 1, min(row + 3, ROWS), 1, piece.color, right))
+            moves.update(self.get_moves(row + 1, min(row + 3, ROWS), 1, piece.color, -1, left))
+            moves.update(self.get_moves(row + 1, min(row + 3, ROWS), 1, piece.color, 1, right))
 
         return moves
     
-    def get_moves_left(self, start, stop, step, color, left, captured = []):
+    def get_moves(self, start, stop, step, color, direction, position, captured = []):
         """
-        Funkcija dobavlja poteze levo od pocetne figure.
+        Funkcija dobavlja poteze u datom pravcu od pocetne figure.
         - `start`: red od kojeg se krece
         - `stop`: krajnji red
         - `step`: korak kojim se krece kroz redove; moze biti +1, kretanje nagore, ili -1, kretanje nadole
         - `color`: boja figure cije poteze dobavljamo
-        - `left`: kolona sa leve strane trenutne figure
-        - `captured`: lista figura koje se mogu pojedi u toku poteza
+        - `direction`: smer kretanja; moze biti -1 za levo ili +1 za desno
+        - `position`: kolona sa trenutne strane (levo ili desno) trenutne figure
+        - `captured`: lista figura koje se mogu pojesti u toku poteza
         """
         moves = {}
         last = []
         for row in range(start, stop, step):
-            if left < 0:
+            if position < 0 or position >= COLS:
                 break
             
-            current = self.board[row][left]
+            current = self.board[row][position]
             if current == 0:
                 if captured and not last:
                     break
                 elif captured:
-                    moves[(row, left)] = last + captured
+                    moves[(row, position)] = last + captured
                 else:
-                    moves[(row, left)] = last
+                    moves[(row, position)] = last
                 
                 if last:
                     if step == -1:
                         new_row = max(row - 3, -1)
                     else:
                         new_row = min(row + 3, ROWS)
-                    moves.update(self.get_moves_left(row + step, new_row, step, color, left - 1, captured = last))
-                    moves.update(self.get_moves_right(row + step, new_row, step, color, left + 1, captured = last))
+                    moves.update(self.get_moves(row + step, new_row, step, color, -1, position - 1, captured = last))
+                    moves.update(self.get_moves(row + step, new_row, step, color, 1, position + 1, captured = last))
                 break
             elif current.color == color:
                 break
             else:
                 last.append(current)
 
-            left -= 1
-        
-        return moves
-
-    def get_moves_right(self, start, stop, step, color, right, captured = []):
-        """
-        Funkcija dobavlja poteze desno od pocetne figure.
-        - `start`: red od kojeg se krece
-        - `stop`: krajnji red
-        - `step`: korak kojim se krece kroz redove; moze biti +1, kretanje nagore, ili -1, kretanje nadole
-        - `color`: boja figure cije poteze dobavljamo
-        - `right`: kolona sa desne strane trenutne figure
-        - `captured`: lista figura koje se mogu pojedi u toku poteza
-        """
-        moves = {}
-        last = []
-        for row in range(start, stop, step):
-            if right >= COLS:
-                break
-            
-            current = self.board[row][right]
-            if current == 0:
-                if captured and not last:
-                    break
-                elif captured:
-                    moves[(row, right)] = last + captured
-                else:
-                    moves[(row, right)] = last
-                
-                if last:
-                    if step == -1:
-                        new_row = max(row - 3, -1)
-                    else:
-                        new_row = min(row + 3, ROWS)
-                    moves.update(self.get_moves_left(row + step, new_row, step, color, right - 1, captured = last))
-                    moves.update(self.get_moves_right(row + step, new_row, step, color, right + 1, captured = last))
-                break
-            elif current.color == color:
-                break
-            else:
-                last = [current]
-
-            right += 1
+            position += direction
         
         return moves
     
@@ -267,61 +226,12 @@ class Board(object):
                     self.brown_left -= 1
                 else:
                     self.white_left -= 1
-
-    # def count_edge_pieces_and_middle(self):
-    #     """
-    #     Funkcija koja broji figure koje se nalaze na ivicama table, kao i kraljice koje se nalaze u sredini table.
-    #     """
-    #     white_count = 0
-    #     white_count_queens = 0
-    #     white_count_middle = 0
-    #     white_count_queens_middle = 0
-        
-    #     brown_count = 0
-    #     brown_count_queens = 0
-    #     brown_count_middle = 0
-    #     brown_count_queens_middle = 0
-
-    #     for row in range(ROWS):
-    #         for col in range(COLS):
-    #             piece = self.board[row][col]
-    #             if piece != 0:
-    #                 if row <= 1 or row >= ROWS - 2 or col <= 1 or col >= COLS - 2:
-    #                     if piece.color == WHITE:
-    #                         white_count += 1
-    #                         if piece.queen:
-    #                             white_count_queens += 1
-    #                     elif piece.color == BROWN:
-    #                         brown_count += 1
-    #                         if piece.queen:
-    #                             brown_count_queens += 1
-    #                 if 2 <= row <= 5 and 2 <= col <= 5:
-    #                     if piece.color == WHITE:
-    #                         white_count_middle += 1
-    #                         if piece.queen:
-    #                             white_count_queens_middle += 1
-    #                     elif piece.color == BROWN:
-    #                         brown_count_middle += 1
-    #                         if piece.queen:
-    #                             brown_count_queens_middle += 1
-                            
-    #     return white_count, white_count_queens, white_count_middle, white_count_queens_middle, brown_count, brown_count_queens, brown_count_middle, brown_count_queens_middle
-
-    # def evaluate_state(self):
-    #     """
-    #     Heuristicka funkcija zasnovana na broju figura, broju kraljica, broju ivicnih figura i broju ivicnih kraljica.
-    #     """
-    #     white = self.white_left * POINTS['piece'] + self.white_queens * POINTS['queen']
-    #     brown = self.brown_left * POINTS['piece'] + self.brown_queens * POINTS['queen']
-
-    #     white_edge, white_queen_edge, white_middle, white_queen_middle, brown_edge, brown_queen_edge, brown_middle, brown_queen_middle = self.count_edge_pieces_and_middle()
-
-    #     white += white_edge * POINTS['side_piece'] + white_queen_edge * POINTS['side_queen'] + white_middle * POINTS['middle_piece'] + white_queen_middle * POINTS['middle_queen']
-    #     brown += brown_edge * POINTS['side_piece'] + brown_queen_edge * POINTS['side_queen'] + brown_middle * POINTS['middle_piece'] + brown_queen_middle * POINTS['middle_queen']
-
-    #     return white - brown
     
     def evaluate_state(self):
+        if self.game_over(WHITE) == "WHITE" or self.game_over(BROWN) == "WHITE":
+            return float('inf')
+        elif self.game_over(BROWN) == "BROWN" or self.game_over(WHITE) == "BROWN":
+            return float('-inf')
         total_pieces = self.brown_left + self.white_left
         if total_pieces >= 17:
             return self.evaluate_state_with_weights(20, 70, 40, 6, 10, 16)
@@ -353,7 +263,7 @@ class Board(object):
 
                 valid_moves = self.get_valid_moves(piece)
                 piece_value += mobility_bonus * len(valid_moves)
-                for move, capture in valid_moves.items():
+                for capture in valid_moves.values():
                     if capture:
                         piece_value += attack_bonus
 
