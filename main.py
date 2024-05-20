@@ -1,7 +1,7 @@
 import pygame
 from constants import *
 from game import Game
-from algorithm import alpha_beta_pruning
+from algorithm import alpha_beta_pruning, get_states
 
 FPS = 60
 
@@ -71,14 +71,15 @@ def main():
     while run:
         clock.tick(FPS)
 
-        if game.turn == WHITE:
-            best_move = alpha_beta_pruning(game.board, 5, game.turn, mode)
-            game.ai_move(best_move)
-        
         if game.board.game_over(game.turn) is not None:
+            pygame.time.delay(1000)
             game.draw_winner()
             pygame.time.delay(3000)
             run = False
+
+        if game.turn == WHITE:
+            best_move = alpha_beta_pruning(game.board, 17, game.turn, mode)
+            game.ai_move(best_move)
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

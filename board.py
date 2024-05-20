@@ -227,65 +227,130 @@ class Board(object):
                 else:
                     self.white_left -= 1
     
-    def evaluate_state(self):
-        if self.game_over(WHITE) == "WHITE" or self.game_over(BROWN) == "WHITE":
-            return float('inf')
-        elif self.game_over(BROWN) == "BROWN" or self.game_over(WHITE) == "BROWN":
-            return float('-inf')
-        total_pieces = self.brown_left + self.white_left
-        if total_pieces >= 17:
-            return self.evaluate_state_with_weights(20, 70, 40, 6, 10, 16)
-        elif total_pieces >= 10:
-            return self.evaluate_state_with_weights(20, 70, 30, 8, 14, 20)
-        else:
-            return self.evaluate_state_with_weights(20, 70, 20, 10, 20, 24)
+    # def evaluate_state(self, maximizing_player):
+    #     if maximizing_player:
+    #         if self.game_over(WHITE) == "WHITE":
+    #             return float('inf')
+    #         elif self.game_over(WHITE) == "BROWN":
+    #             return float('-inf')
+    #     else:
+    #         if self.game_over(BROWN) == "BROWN":
+    #             return float('-inf')
+    #         elif self.game_over(BROWN) == "WHITE":
+    #             return float('inf')
+    #     total_pieces = self.brown_left + self.white_left
+    #     if total_pieces >= 17:
+    #         return self.evaluate_state_with_weights(20, 70, 40, 20, 10, 15, 20, 10)
+    #     elif total_pieces >= 10:
+    #         return self.evaluate_state_with_weights(20, 70, 30, 15, 15, 20, 30, 20)
+    #     else:
+    #         return self.evaluate_state_with_weights(20, 70, 20, 15, 20, 25, 20, 40)
 
-    def evaluate_state_with_weights(self, piece_weight, queen_weight, center_bonus, mobility_bonus,
-                                    protected_bonus, attack_bonus):
-        brown_score = 0
-        white_score = 0
+    # def evaluate_state_with_weights(self, piece_weight, queen_weight, center_bonus, mobility_bonus,
+    #                                 protected_bonus, attack_bonus, queen_protected_bonus, queen_attack_bonus):
+    #     brown_score = 0
+    #     white_score = 0
+
+    #     for row in range(ROWS):
+    #         for col in range(COLS):
+    #             piece = self.get_piece(row, col)
+    #             if piece == 0:
+    #                 continue
+                
+    #             piece_value = 0
+
+    #             if (row == 0 and piece.color == WHITE) or (row == ROWS - 1 and piece.color == BROWN):
+    #                 piece_value += queen_protected_bonus
+                
+    #             if piece.queen:
+    #                 piece_value += queen_weight
+    #             else:
+    #                 piece_value += piece_weight
+                
+    #             if 2 < row < 5 and 2 < col < 5:
+    #                 piece_value += center_bonus
+
+    #             valid_moves = self.get_valid_moves(piece)
+    #             piece_value += mobility_bonus * len(valid_moves)
+    #             for capture in valid_moves.values():
+    #                 if capture:
+    #                     piece_value += attack_bonus
+    #                     for captured_piece in capture:
+    #                         if captured_piece.queen:
+    #                             piece_value += queen_attack_bonus
+
+    #             if self.is_protected(piece):
+    #                 piece_value += protected_bonus
+                
+    #             if piece.color == BROWN:
+    #                 brown_score += piece_value
+    #             else:
+    #                 white_score += piece_value
+
+    #     return white_score - brown_score
+
+    # def is_protected(self, piece):
+    #     directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+    #     for direction in directions:
+    #         row, col = piece.row + direction[0], piece.col + direction[1]
+    #         if 0 <= row < ROWS and 0 <= col < COLS:
+    #             neighbor = self.get_piece(row, col)
+    #             if neighbor and neighbor.color == piece.color:
+    #                 return True
+    #     return False
+
+    def count_edge_pieces_and_middle(self):
+        """
+        Funkcija koja broji figure koje se nalaze na ivicama table, kao i kraljice koje se nalaze u sredini table.
+        """
+        white_count = 0
+        white_count_queens = 0
+        white_count_middle = 0
+        white_count_queens_middle = 0
+        
+        brown_count = 0
+        brown_count_queens = 0
+        brown_count_middle = 0
+        brown_count_queens_middle = 0
 
         for row in range(ROWS):
             for col in range(COLS):
-                piece = self.get_piece(row, col)
-                if piece == 0:
-                    continue
-                
-                piece_value = 0
-                
-                if piece.queen:
-                    piece_value += queen_weight
-                else:
-                    piece_value += piece_weight
-                
-                if 2 <= row <= 5 and 2 <= col <= 5:
-                    piece_value += center_bonus
+                piece = self.board[row][col]
+                if piece != 0:
+                    if row <= 1 or row >= ROWS - 2 or col <= 1 or col >= COLS - 2:
+                        if piece.color == WHITE:
+                            white_count += 1
+                            if piece.queen:
+                                white_count_queens += 1
+                        elif piece.color == BROWN:
+                            brown_count += 1
+                            if piece.queen:
+                                brown_count_queens += 1
+                    if 2 <= row <= 5 and 2 <= col <= 5:
+                        if piece.color == WHITE:
+                            white_count_middle += 1
+                            if piece.queen:
+                                white_count_queens_middle += 1
+                        elif piece.color == BROWN:
+                            brown_count_middle += 1
+                            if piece.queen:
+                                brown_count_queens_middle += 1
+                            
+        return white_count, white_count_queens, white_count_middle, white_count_queens_middle, brown_count, brown_count_queens, brown_count_middle, brown_count_queens_middle
 
-                valid_moves = self.get_valid_moves(piece)
-                piece_value += mobility_bonus * len(valid_moves)
-                for capture in valid_moves.values():
-                    if capture:
-                        piece_value += attack_bonus
+    def evaluate_state(self):
+        """
+        Heuristicka funkcija zasnovana na broju figura, broju kraljica, broju ivicnih figura i broju ivicnih kraljica.
+        """
+        white = self.white_left * POINTS['piece'] + self.white_queens * POINTS['queen']
+        brown = self.brown_left * POINTS['piece'] + self.brown_queens * POINTS['queen']
 
-                if self.is_protected(piece):
-                    piece_value += protected_bonus
-                
-                if piece.color == BROWN:
-                    brown_score += piece_value
-                else:
-                    white_score += piece_value
+        white_edge, white_queen_edge, white_middle, white_queen_middle, brown_edge, brown_queen_edge, brown_middle, brown_queen_middle = self.count_edge_pieces_and_middle()
 
-        return white_score - brown_score
+        white += white_edge * POINTS['side_piece'] + white_queen_edge * POINTS['side_queen'] + white_middle * POINTS['middle_piece'] + white_queen_middle * POINTS['middle_queen']
+        brown += brown_edge * POINTS['side_piece'] + brown_queen_edge * POINTS['side_queen'] + brown_middle * POINTS['middle_piece'] + brown_queen_middle * POINTS['middle_queen']
 
-    def is_protected(self, piece):
-        directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
-        for direction in directions:
-            row, col = piece.row + direction[0], piece.col + direction[1]
-            if 0 <= row < ROWS and 0 <= col < COLS:
-                neighbor = self.get_piece(row, col)
-                if neighbor and neighbor.color == piece.color:
-                    return True
-        return False
+        return white - brown
     
     def game_over(self, turn):
         """
@@ -296,8 +361,11 @@ class Board(object):
         elif self.white_left <= 0:
             return "BROWN"
         if not self.has_valid_moves_for_color(turn):
-            if turn == BROWN:
-                return "WHITE"
-            else:
+            new_turn = BROWN if turn == WHITE else WHITE
+            if not self.has_valid_moves_for_color(new_turn):
+                return "DRAW"
+            elif turn == WHITE:
                 return "BROWN"
+            else:
+                return "WHITE"
         return None
