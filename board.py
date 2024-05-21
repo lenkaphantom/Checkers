@@ -298,11 +298,11 @@ class Board(object):
 
         total_pieces = self.brown_left + self.white_left
         if total_pieces >= 20:
-            return self.evaluation_based_on_phase(10, 30, 5, 10, 5, 5, 10, 5, 15, 5, 5)
+            return self.evaluation_based_on_phase(20, 60, 5, 10, 5, 5, 10, 5, 15, 5, 5)
         elif total_pieces >= 10:
-            return self.evaluation_based_on_phase(15, 40, 5, 10, 10, 10, 15, 10, 10, 10, 15)
+            return self.evaluation_based_on_phase(20, 60, 5, 10, 10, 10, 15, 10, 10, 10, 15)
         else:
-            return self.evaluation_based_on_phase(20, 50, 10, 20, 10, 10, 20, 10, 5, 15, 20)
+            return self.evaluation_based_on_phase(20, 60, 10, 20, 10, 20, 20, 10, 5, 10, 15)
 
     def evaluation_based_on_phase(self, pawn_weight, queen_weight, safe_pawn, safe_queen,
                                 mobility_pawn, mobility_queen, promotion_bonus,
@@ -318,20 +318,17 @@ class Board(object):
 
                 piece_value = 0
 
-                # Težina figura i kraljica
                 if piece.queen:
                     piece_value += queen_weight
                 else:
                     piece_value += pawn_weight
 
-                # Sigurnost figura na ivicama table
                 if (row == 0 and piece.color == WHITE) or (row == ROWS - 1 and piece.color == BROWN) or col == 0 or col == COLS - 1:
                     if piece.queen:
                         piece_value += safe_queen
                     else:
                         piece_value += safe_pawn
 
-                # Mobilnost figura
                 valid_moves = self.get_valid_moves(piece)
                 for capture in valid_moves.values():
                     if capture:
@@ -341,22 +338,18 @@ class Board(object):
                     else:
                         piece_value += mobility_pawn
 
-                # Bonus za promociju
                 if not piece.queen and self.distance_to_promotion(piece) == 1:
                     piece_value += promotion_bonus
 
-                # Odbrambene figure
                 if (row <= 1 and piece.color == WHITE) or (row >= ROWS - 2 and piece.color == BROWN):
                     piece_value += defending_pieces
 
-                # Figure u centru table
                 if 2 <= row <= 5 and 2 <= col <= 5:
                     if piece.queen:
                         piece_value += center_queen
                     else:
                         piece_value += center_piece
 
-                # Ažuriranje ukupne vrednosti za boje
                 if piece.color == BROWN:
                     brown_value += piece_value
                 else:

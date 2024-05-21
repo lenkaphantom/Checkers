@@ -4,19 +4,16 @@ from constants import BROWN, WHITE
 
 transposition_table = {}
 
-def alpha_beta_pruning(board, depth, turn, mode):
+def alpha_beta_pruning(board, max_depth, turn, mode):
     start_time = time.time()
-    time_limit = 2.7
+    time_limit = 2.5
 
     def alpha_beta(board, depth, alpha, beta, maximizing_player):
-        if time.time() - start_time > time_limit:
-            return board.evaluate_state(maximizing_player), board
-
-        if depth == 0 or board.game_over(turn):
+        if depth == 0 or time.time() - start_time > time_limit:
             return board.evaluate_state(maximizing_player), board
 
         board.get_zobrist_key()
-        zobrist_key = board.zobrist_key
+        zobrist_key = (board.zobrist_key, depth)
 
         if zobrist_key in transposition_table:
             return transposition_table[zobrist_key]
@@ -48,22 +45,23 @@ def alpha_beta_pruning(board, depth, turn, mode):
             transposition_table[zobrist_key] = (value, best_move)
             return value, best_move
 
-    _, best_move = alpha_beta(board, depth, float('-inf'), float('inf'), turn == WHITE)
+    best_move = None
+    for depth in range(1, max_depth + 1):
+        _, best_move = alpha_beta(board, depth, float('-inf'), float('inf'), turn == WHITE)
+        if time.time() - start_time > time_limit:
+            break
 
     end_time = time.time()
     print(f"Time taken: {end_time - start_time}")
 
     return best_move
 
-
 def get_states(board, maximizing_player, mode):
     states = []
-    if maximizing_player:
-        turn = WHITE
-    else:
-        turn = BROWN
+    turn = WHITE if maximizing_player else BROWN
     pieces = board.get_pieces_color(turn)
     for piece in pieces:
+        valid_moves = []
         if mode == 1:
             forced_moves = board.get_forced_valid_moves(piece.color)
             if not forced_moves:
@@ -74,8 +72,10 @@ def get_states(board, maximizing_player, mode):
                 continue
         else:
             valid_moves = board.get_valid_moves(piece)
+        
         if not valid_moves:
             continue
+        
         for move, capture in valid_moves.items():
             new_board = deepcopy(board)
             new_piece = new_board.get_piece(piece.row, piece.col)
@@ -84,4 +84,5 @@ def get_states(board, maximizing_player, mode):
                 new_board.remove(capture)
             value = new_board.evaluate_state(maximizing_player)
             states.append((new_board, value))
+    
     return states
