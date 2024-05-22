@@ -6,10 +6,10 @@ transposition_table = {}
 
 def alpha_beta_pruning(board, max_depth, turn, mode):
     start_time = time.time()
-    time_limit = 2.5
+    time_limit = 2.8
 
     def alpha_beta(board, depth, alpha, beta, maximizing_player):
-        if depth == 0 or time.time() - start_time > time_limit:
+        if depth == 0 or time.time() - start_time > time_limit or board.game_over(WHITE if maximizing_player else BROWN) != None:
             return board.evaluate_state(maximizing_player), board
 
         board.get_zobrist_key()

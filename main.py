@@ -78,7 +78,7 @@ def main():
             run = False
 
         if game.turn == WHITE:
-            best_move = alpha_beta_pruning(game.board, 17, game.turn, mode)
+            best_move = alpha_beta_pruning(game.board, 7, game.turn, mode)
             game.ai_move(best_move)
         
         for event in pygame.event.get():
