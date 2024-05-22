@@ -297,14 +297,17 @@ class Board(object):
                 return float('-inf')
             elif brown_over == "WHITE":
                 return float('inf')
+        
+        if white_over == brown_over == 'DRAW':
+            return 0
 
         total_pieces = self.brown_left + self.white_left
         if total_pieces >= 20:
-            return self.evaluation_based_on_phase(20, 60, 5, 10, 5, 5, 10, 5, 15, 5, 5)
+            return self.evaluation_based_on_phase(20, 60, 5, 10, 5, 5, 10, 5, 10, 5, 5)
         elif total_pieces >= 10:
-            return self.evaluation_based_on_phase(20, 60, 5, 10, 10, 10, 15, 10, 10, 10, 15)
+            return self.evaluation_based_on_phase(20, 60, 5, 10, 10, 10, 20, 10, 10, 10, 15)
         else:
-            return self.evaluation_based_on_phase(20, 60, 10, 15, 10, 15, 15, 10, 5, 10, 15)
+            return self.evaluation_based_on_phase(20, 60, 10, 15, 10, 15, 25, 10, 5, 10, 15)
 
     def evaluation_based_on_phase(self, pawn_weight, queen_weight, safe_pawn, safe_queen,
                                 mobility_pawn, mobility_queen, promotion_bonus,

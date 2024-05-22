@@ -7,6 +7,7 @@ transposition_table = {}
 def alpha_beta_pruning(board, max_depth, turn, mode):
     start_time = time.time()
     time_limit = 2.8
+    previous_best_move = None
 
     def alpha_beta(board, depth, alpha, beta, maximizing_player):
         if depth == 0 or time.time() - start_time > time_limit or board.game_over(WHITE if maximizing_player else BROWN) != None:
@@ -48,11 +49,16 @@ def alpha_beta_pruning(board, max_depth, turn, mode):
     best_move = None
     for depth in range(1, max_depth + 1):
         _, best_move = alpha_beta(board, depth, float('-inf'), float('inf'), turn == WHITE)
+        if best_move is not None:
+            previous_best_move = best_move
         if time.time() - start_time > time_limit:
             break
 
     end_time = time.time()
     print(f"Time taken: {end_time - start_time}")
+
+    if best_move is None and previous_best_move is not None:
+        return previous_best_move
 
     return best_move
 
