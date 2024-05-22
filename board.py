@@ -269,7 +269,6 @@ class Board(object):
                     if piece.queen:
                         self.white_queens -= 1
                 self.update_zobrist_key(piece, piece.row, piece.col)
-
     
     def evaluate_state(self, maximizing_player):
         """
@@ -285,33 +284,27 @@ class Board(object):
         - sprečavanje protivnika da dobije kraljicu,
         - napad na protivničku kraljicu.
         """
-        white_over = self.game_over(WHITE)
-        brown_over = self.game_over(BROWN)
         if maximizing_player:
-            if white_over == "WHITE":
+            if self.game_over(WHITE) == "WHITE":
                 return float('inf')
-            elif white_over == "BROWN":
+            elif self.game_over(WHITE) == "BROWN":
                 return float('-inf')
         else:
-            if brown_over == "BROWN":
+            if self.game_over(BROWN) == "BROWN":
                 return float('-inf')
-            elif brown_over == "WHITE":
+            elif self.game_over(BROWN) == "WHITE":
                 return float('inf')
-        
-        if white_over == brown_over == 'DRAW':
-            return 0
 
-        total_pieces = self.brown_left + self.white_left
-        if total_pieces >= 20:
-            return self.evaluation_based_on_phase(20, 60, 5, 10, 5, 5, 10, 5, 10, 5, 5)
-        elif total_pieces >= 10:
-            return self.evaluation_based_on_phase(20, 60, 5, 10, 10, 10, 20, 10, 10, 10, 15)
-        else:
-            return self.evaluation_based_on_phase(20, 60, 10, 15, 10, 15, 25, 10, 5, 10, 15)
+        return self.evaluation_based_on_phase(
+            pawn_weight=10, queen_weight=30, safe_pawn=5, safe_queen=10,
+            mobility_pawn=2, mobility_queen=5, promotion_bonus=20,
+            defending_pieces=10, attacking_piece=10, center_pawn=5, center_queen=15,
+            mobility_penalty=-5
+        )
 
     def evaluation_based_on_phase(self, pawn_weight, queen_weight, safe_pawn, safe_queen,
                                 mobility_pawn, mobility_queen, promotion_bonus,
-                                defending_pieces, attacking_pawn, center_piece, center_queen):
+                                defending_pieces, attacking_piece, center_pawn, center_queen, mobility_penalty):
         white_value = 0
         brown_value = 0
 
@@ -328,32 +321,33 @@ class Board(object):
                 else:
                     piece_value += pawn_weight
 
-                if (row == 0 and piece.color == WHITE) or (row == ROWS - 1 and piece.color == BROWN) or col == 0 or col == COLS - 1:
+                if row == 0 or row == ROWS - 1 or col == 0 or col == COLS - 1:
                     if piece.queen:
                         piece_value += safe_queen
                     else:
                         piece_value += safe_pawn
 
-                valid_moves = self.get_valid_moves(piece)
-                for capture in valid_moves.values():
-                    if capture:
-                        piece_value += attacking_pawn
-                    elif piece.queen:
-                        piece_value += mobility_queen
+                piece_moves = self.get_valid_moves(piece)
+                if piece_moves == {}:
+                    piece_value += mobility_penalty
+                else:
+                    if not piece.queen and self.one_move_promotion(piece_moves, piece.color):
+                        piece_value += promotion_bonus
+                    elif not piece.queen:
+                        piece_value += len(piece_moves) * mobility_pawn
                     else:
-                        piece_value += mobility_pawn
-
-                if not piece.queen and self.distance_to_promotion(piece) == 1:
-                    piece_value += promotion_bonus
+                        piece_value += len(piece_moves) * mobility_queen
 
                 if (row <= 1 and piece.color == WHITE) or (row >= ROWS - 2 and piece.color == BROWN):
                     piece_value += defending_pieces
+                elif (row >= ROWS - 3 and piece.color == WHITE) or (row <= 2 and piece.color == BROWN):
+                    piece_value += attacking_piece
 
                 if 2 <= row <= 5 and 2 <= col <= 5:
                     if piece.queen:
                         piece_value += center_queen
                     else:
-                        piece_value += center_piece
+                        piece_value += center_pawn
 
                 if piece.color == BROWN:
                     brown_value += piece_value
@@ -362,58 +356,13 @@ class Board(object):
 
         return white_value - brown_value
 
-    def distance_to_promotion(self, piece):
-        if piece.color == WHITE:
-            return ROWS - 1 - piece.row
-        return piece.row
-
-
-    # def evaluate_state_with_weights(self, piece_weight, queen_weight, center_bonus, mobility_bonus,
-    #                                 protected_bonus, attack_bonus):
-    #     brown_score = 0
-    #     white_score = 0
-
-    #     for row in range(ROWS):
-    #         for col in range(COLS):
-    #             piece = self.get_piece(row, col)
-    #             if piece == 0:
-    #                 continue
-                
-    #             piece_value = 0
-                
-    #             if piece.queen:
-    #                 piece_value += queen_weight
-    #             else:
-    #                 piece_value += piece_weight
-                
-    #             if 2 <= row <= 5 and 2 <= col <= 5:
-    #                 piece_value += center_bonus
-
-    #             valid_moves = self.get_valid_moves(piece)
-    #             piece_value += mobility_bonus * len(valid_moves)
-    #             for capture in valid_moves.values():
-    #                 if capture:
-    #                     piece_value += attack_bonus
-
-    #             if self.is_protected(piece):
-    #                 piece_value += protected_bonus
-                
-    #             if piece.color == BROWN:
-    #                 brown_score += piece_value
-    #             else:
-    #                 white_score += piece_value
-
-    #     return white_score - brown_score
-
-    # def is_protected(self, piece):
-    #     directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
-    #     for direction in directions:
-    #         row, col = piece.row + direction[0], piece.col + direction[1]
-    #         if 0 <= row < ROWS and 0 <= col < COLS:
-    #             neighbor = self.get_piece(row, col)
-    #             if neighbor and neighbor.color == piece.color:
-    #                 return True
-    #     return False
+    def one_move_promotion(self, piece_moves, color):
+        for move in piece_moves:
+            if color == WHITE and move[0] == ROWS - 1:
+                return True
+            elif color == BROWN and move[0] == 0:
+                return True
+        return False
 
     # def count_edge_pieces_and_middle(self):
     #     """
