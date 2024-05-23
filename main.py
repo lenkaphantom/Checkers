@@ -1,7 +1,7 @@
 import pygame
 from constants import *
 from game import Game
-from algorithm import alpha_beta_pruning, minimax
+from algorithm import alpha_beta_pruning
 
 FPS = 60
 

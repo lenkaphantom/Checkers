@@ -15,6 +15,7 @@ def alpha_beta_pruning(board, max_depth, turn, mode):
 
         board.get_zobrist_key()
         zobrist_key = (board.zobrist_key, depth)
+        print(zobrist_key)
 
         if zobrist_key in transposition_table:
             return transposition_table[zobrist_key]
