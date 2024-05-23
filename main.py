@@ -72,9 +72,9 @@ def main():
         clock.tick(FPS)
 
         if game.board.game_over(game.turn) is not None:
-            pygame.time.delay(1000)
+            pygame.time.delay(900)
             game.draw_winner()
-            pygame.time.delay(3000)
+            pygame.time.delay(2500)
             run = False
 
         if game.turn == WHITE:
