@@ -1,4 +1,3 @@
-from typing import Any
 import pygame
 from constants import *
 from piece import Piece
@@ -272,124 +271,122 @@ class Board(object):
 
     # def evaluate_state(self, maximizing_player):
     #     """
-    #     Heuristička funkcija koja na osnovu faze igre daje prednost različitim elementima.
-    #     U heuristiku je uključeno i vrednovanje završnog stanja igre.
-    #     Elementi koji se uzimaju u obzir su:
-    #     - broj figura,
-    #     - broj kraljica,
-    #     - broj figura na ivicama table,
-    #     - broj figura u sredini table,
-    #     - broj zaštićenih figura,
-    #     - broj napada,
-    #     - sprečavanje protivnika da dobije kraljicu,
-    #     - napad na protivničku kraljicu.
+    #     Heuristička funkcija koja računa skor na osnovu različitih parametara za svaku boju.
     #     """
-    #     white_over = self.game_over(WHITE)
-    #     brown_over = self.game_over(BROWN)
     #     if maximizing_player:
-    #         if white_over == "WHITE":
+    #         if self.game_over(WHITE) == "WHITE":
     #             return float('inf')
-    #         elif white_over == "BROWN":
+    #         elif self.game_over(WHITE) == "BROWN":
     #             return float('-inf')
     #     else:
-    #         if brown_over == "BROWN":
+    #         if self.game_over(BROWN) == "BROWN":
     #             return float('-inf')
-    #         elif brown_over == "WHITE":
+    #         elif self.game_over(BROWN) == "WHITE":
     #             return float('inf')
 
-    #     total_pieces = self.brown_left + self.white_left
-    #     if total_pieces >= 16:
-    #         return self.evaluation_based_on_phase(
-    #             pawn_weight=10, queen_weight=40, safe_pawn=5, safe_queen=10,
-    #             mobility_pawn=5, mobility_queen=5, promotion_bonus=15,
-    #             defending_pieces=5, attacking_piece=10, center_piece=20, multiple_jumps_bonus=30
-    #         )
-    #     elif total_pieces >= 8:
-    #         return self.evaluation_based_on_phase(
-    #             pawn_weight=5, queen_weight=30, safe_pawn=5, safe_queen=15,
-    #             mobility_pawn=10, mobility_queen=10, promotion_bonus=20,
-    #             defending_pieces=20, attacking_piece=15, center_piece=10, multiple_jumps_bonus=15
-    #         )
-    #     else:
-    #         return self.evaluation_based_on_phase(
-    #             pawn_weight=5, queen_weight=50, safe_pawn=10, safe_queen=20,
-    #             mobility_pawn=5, mobility_queen=20, promotion_bonus=10,
-    #             defending_pieces=10, attacking_piece=15, center_piece=5, multiple_jumps_bonus=10
-    #         )
+    #     white_score = self.calculate_score(WHITE)
+    #     brown_score = self.calculate_score(BROWN)
 
-    # def evaluation_based_on_phase(self, pawn_weight, queen_weight, safe_pawn, safe_queen,
-    #                           mobility_pawn, mobility_queen, promotion_bonus,
-    #                           defending_pieces, attacking_piece, center_piece, multiple_jumps_bonus):
-    #     white_value = 0
-    #     brown_value = 0
+    #     return white_score - brown_score
 
+    # def calculate_score(self, color):
+    #     """
+    #     Funkcija koja računa skor za određenu boju.
+    #     """
+    #     score = 0
     #     for row in range(ROWS):
     #         for col in range(COLS):
     #             piece = self.get_piece(row, col)
-    #             if piece == 0:
-    #                 continue
-
-    #             piece_value = 0
-
-    #             if (row == 0 and piece.color == WHITE) or (row == ROWS - 1 and piece.color == BROWN) or col == 0 or col == COLS - 1:
+    #             if piece != 0 and piece.color == color:
+    #                 piece_moves = self.get_valid_moves(piece)
     #                 if piece.queen:
-    #                     piece_value += safe_queen
+    #                     score += 10
+    #                     if self.is_safe(row, col):
+    #                         score += 5
+    #                     if self.is_moveable(piece_moves):
+    #                         score += 2
     #                 else:
-    #                     piece_value += safe_pawn
-
-    #             valid_moves = self.get_valid_moves(piece)
-    #             for move, capture in valid_moves.items():
-    #                 if capture:
-    #                     piece_value += attacking_piece * self.captured_queen(capture)
-    #                     if len(capture) > 1:
-    #                         piece_value += multiple_jumps_bonus
-    #                 elif piece.queen:
-    #                     piece_value += mobility_queen
-    #                 else:
-    #                     piece_value += mobility_pawn
-
-    #             if not piece.queen:
-    #                 piece_value += self.pieces_to_promote(piece.color) * promotion_bonus
-
-    #             if (row <= 1 and piece.color == WHITE) or (row >= ROWS - 2 and piece.color == BROWN):
-    #                 piece_value += defending_pieces
-
-    #             if 2 <= row <= 5 and 2 <= col <= 5:
-    #                 piece_value += center_piece
-
-    #             if piece.color == BROWN:
-    #                 brown_value += piece_value
-    #             else:
-    #                 white_value += piece_value
-
-    #     white_value += self.white_queens * queen_weight + (self.white_left - self.white_queens) * pawn_weight
-    #     brown_value += self.brown_queens * queen_weight + (self.brown_left - self.brown_queens) * pawn_weight
-
-    #     return white_value - brown_value
-
-    # def pieces_to_promote(self, color):
-    #     pieces = self.get_pieces_color(color)
-    #     count = 0
-
-    #     for piece in pieces:
-    #         val_moves = self.get_valid_moves(piece)
-    #         for move in val_moves:
-    #             if color == WHITE:
-    #                 if move[0] == ROWS - 1:
-    #                     count += 1
-    #             else:
-    #                 if move[0] == 0:
-    #                     count += 1
-
-    #     return count
+    #                     score += 1
+    #                     if self.is_safe(row, col):
+    #                         score += 3
+    #                     if self.is_moveable(piece):
+    #                         score += 1
+    #                     if self.is_promotable_in_one_move(piece_moves, color):
+    #                         score += 7
+    #                     if self.is_defender(piece):
+    #                         score += 2
+    #                     elif self.is_attacker(piece):
+    #                         score += 2
+    #                     elif self.is_central_piece(piece):
+    #                         score += 2
+    #     return score
     
-    # def captured_queen(self, captured):
-    #     total = 0
-    #     for piece in captured:
-    #         if piece.queen:
-    #             total += 1
-    #     return total
+    # def is_safe(self, row, col):
+    #     """
+    #     Proverava da li je figura sigurna (pored ivice table).
+    #     """
+    #     return row == 0 or row == ROWS - 1 or col == 0 or col == COLS - 1
 
+    # def is_moveable(self, piece_moves):
+    #     """
+    #     Proverava da li je figura može da se pomeri (ne računajući prioritet hvatanja).
+    #     """
+    #     return bool(piece_moves)
+
+    # def is_promotable_in_one_move(self, piece_moves, color):
+    #     """
+    #     Proverava da li je figura može da se promoviše u jednom potezu.
+    #     """
+    #     for move in piece_moves:
+    #         if color == WHITE and move[0] == ROWS - 1:
+    #             return True
+    #         elif color == BROWN and move[0] == 0:
+    #             return True
+    #     return False
+
+    # def is_defender(self, piece):
+    #     """
+    #     Proverava da li je figura branilac (nalazi se u dva najdonja reda).
+    #     """
+    #     if piece.color == WHITE:
+    #         return piece.row >= ROWS - 2
+    #     elif piece.color == BROWN:
+    #         return piece.row <= 1
+
+    # def is_attacker(self, piece):
+    #     """
+    #     Proverava da li je figura napadač (nalazi se u tri najgornja reda).
+    #     """
+    #     if piece.color == WHITE:
+    #         return piece.row <= 2
+    #     elif piece.color == BROWN:
+    #         return piece.row >= ROWS - 3
+
+    # def is_central_piece(self, piece):
+    #     """
+    #     Proverava da li je figura centralno pozicionirana (nalazi se na osam centralnih kvadrata table).
+    #     """
+    #     row, col = piece.row, piece.col
+    #     return 2 <= row <= 5 and 2 <= col <= 5
+    
+    def game_over(self, turn):
+        """
+        Funkcija koja proverava da li je igra zavrsena.
+        """
+        if self.brown_left <= 0:
+            return "WHITE"
+        elif self.white_left <= 0:
+            return "BROWN"
+        if not self.has_valid_moves_for_color(turn):
+            new_turn = BROWN if turn == WHITE else WHITE
+            if not self.has_valid_moves_for_color(new_turn):
+                return "DRAW"
+            elif turn == WHITE:
+                return "BROWN"
+            else:
+                return "WHITE"
+        return None
+    
     def evaluate_state(self, maximizing_player):
         """
         Heuristička funkcija koja računa skor na osnovu različitih parametara za svaku boju.
@@ -409,101 +406,90 @@ class Board(object):
                 return float('-inf')
             elif brown_over == "WHITE":
                 return float('inf')
-            
-        weights = [5, 7.5, 4, 2.5, 0.5, -3, 3]
 
-        white_score = self.calculate_score(WHITE)
-        brown_score = self.calculate_score(BROWN)
-
-        total_score = 0
-
-        for i in range(len(weights)):
-            total_score += weights[i] * (white_score[i] - brown_score[i])
-
-        return total_score
-
-    def calculate_score(self, color):
-        """
-        Funkcija koja računa skor za određenu boju.
-        """
-        score = [0, 0, 0, 0, 0, 0, 0]
-        if color == WHITE:
-            score[0] = self.white_left - self.white_queens
-            score[1] = self.white_queens
-        else:
-            score[0] = self.brown_left - self.brown_queens
-            score[1] = self.brown_queens
+        return self.calculate_heuristics()
         
+    def calculate_heuristics(self):
+        """
+        Funkcija koja računa heuristiku za trenutno stanje table.
+        Racuna se na osnovu sledecih parametara:
+        - broj figura,
+        - broj kraljica,
+        - broj figura na centru table,
+        - broj sigurnih figura,
+        - broj figura koje se brane,
+        - broj figura koje mogu da postanu kraljica,
+        - broj figura koje mogu da naprave visestruke skokove,
+        - broj figura u grupi.
+        """
+        basic_score = POINTS['piece'] * (self.white_left - self.brown_left) + POINTS['queen'] * (self.white_queens - self.brown_queens)
+
+        white_score = 0
+        brown_score = 0
+
         for row in range(ROWS):
             for col in range(COLS):
                 piece = self.get_piece(row, col)
-                if piece != 0 and piece.color == color:
-                    if row == ROWS - 1 and color == BROWN:
-                        score[2] += 1
-                        score[6] += 1
-                        continue
-                    if row == 0 and color == WHITE:
-                        score[2] += 1
-                        score[6] += 1
-                        continue
 
-                    if row == 3 or row == 4:
-                        if 2 <= col <= 5:
-                            score[3] += 1
-                        else:
-                            score[4] += 1
+                if piece == 0:
+                    continue
 
-                    if color == BROWN:
-                        if row > 0 and 0 < col < 7:
-                            temp_piece1 = self.get_piece(row - 1, col - 1)
-                            temp_piece2 = self.get_piece(row - 1, col + 1)
-                            if temp_piece1 != 0 and temp_piece1.color == WHITE and self.get_piece(row + 1, col + 1) == 0:
-                                score[5] += 1
-                            if temp_piece2 != 0 and temp_piece2.color == WHITE and self.get_piece(row + 1, col - 1) == 0:
-                                score[5] += 1
-                        
-                        if row < 7:
-                            if col == 0 or col == 7:
-                                score[6] += 1
-                            else:
-                                temp_piece1 = self.get_piece(row + 1, col - 1)
-                                temp_piece2 = self.get_piece(row + 1, col + 1)
-                                if (temp_piece1 != 0 and (temp_piece1.color == WHITE or not temp_piece1.queen)) and (temp_piece2 != 0 and (temp_piece2.color == WHITE or not temp_piece2.queen)):
-                                    score[6] += 1
-                    else:
-                        if row < 7 and 0 < col < 7:
-                            temp_piece1 = self.get_piece(row + 1, col - 1)
-                            temp_piece2 = self.get_piece(row + 1, col + 1)
-                            if temp_piece1 != 0 and temp_piece1.color == BROWN and self.get_piece(row - 1, col + 1) == 0:
-                                score[5] += 1
-                            if temp_piece2 != 0 and temp_piece2.color == BROWN and self.get_piece(row - 1, col - 1) == 0:
-                                score[5] += 1
+                if piece.color == WHITE:
+                    white_score += self.evaluate_piece(piece, [(-1, -1), (-1, 1)])
+                else:
+                    brown_score += self.evaluate_piece(piece, [(1, -1), (1, 1)])
 
-                        if row > 0:
-                            if col == 0 or col == 7:
-                                score[6] += 1
-                            else:
-                                temp_piece1 = self.get_piece(row - 1, col - 1)
-                                temp_piece2 = self.get_piece(row - 1, col + 1)
-                                if (temp_piece1 != 0 and (temp_piece1.color == BROWN or not temp_piece1.queen)) and (temp_piece2 != 0 and (temp_piece2.color == BROWN or not temp_piece2.queen)):
-                                    score[6] += 1
+        return basic_score + white_score - brown_score
+
+    def evaluate_piece(self, piece, protection_directions):
+        """
+        Evaluira pojedinačnu figuru na osnovu njenog položaja i mogućnosti.
+        """
+        score = 0
+
+        if 2 <= piece.row <= 5 and 2 <= piece.col <= 5:
+            score += POINTS['middle_piece']
+        elif (piece.color == WHITE and piece.row == 0) or (piece.color == BROWN and piece.row == ROWS - 1):
+            score += POINTS['defend']
+            if (piece.col == 1 or piece.col == COLS - 3 and piece.color == WHITE) or (piece.col == 2 or piece.col == COLS - 2 and piece.color == BROWN):
+                score += POINTS['special_defend']
+        
+        if self.is_protected(piece, protection_directions):
+            score += POINTS['safe']
+
+        piece_moves = self.get_valid_moves(piece)
+        for move in piece_moves:
+            if self.capture_queen(piece_moves[move]):
+                score += POINTS['special_jump']
+            if len(piece_moves[move]) > 1:
+                score += POINTS['jump'] * (len(piece_moves[move]) ** 2)
+            if (piece.color == WHITE and move[0] == ROWS - 1) or (piece.color == BROWN and move[0] == 0):
+                score += 2 * POINTS['promotion']
 
         return score
-    
-    def game_over(self, turn):
+
+    def is_protected(self, piece, directions):
         """
-        Funkcija koja proverava da li je igra zavrsena.
+        Proverava da li je figura zaštićena drugim figurama iste boje u zadatim pravcima.
         """
-        if self.brown_left <= 0:
-            return "WHITE"
-        elif self.white_left <= 0:
-            return "BROWN"
-        if not self.has_valid_moves_for_color(turn):
-            new_turn = BROWN if turn == WHITE else WHITE
-            if not self.has_valid_moves_for_color(new_turn):
-                return "DRAW"
-            elif turn == WHITE:
-                return "BROWN"
-            else:
-                return "WHITE"
-        return None
+        for direction in directions:
+            row = piece.row + direction[0]
+            col = piece.col + direction[1]
+
+            if row < 0 or row >= ROWS or col < 0 or col >= COLS:
+                continue
+
+            neighbour = self.get_piece(row, col)
+            if neighbour == 0 or neighbour.color != piece.color:
+                return False
+
+        return True
+
+    def capture_queen(self, captured):
+        """
+        Proverava da li se među uhvaćenim figurama nalazi kraljica.
+        """
+        for piece in captured:
+            if piece.queen:
+                return True
+        return False

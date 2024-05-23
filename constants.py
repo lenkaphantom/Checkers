@@ -17,11 +17,14 @@ GREY = (128, 128, 128)
 CROWN = pygame.image.load('crown.png')
 CROWN = pygame.transform.scale(CROWN, (44, 25))
 
-# POINTS = {
-#     'piece': 5,
-#     'queen': 10,
-#     'side_piece': 7,
-#     'side_queen': 20,
-#     'middle_piece': 7,
-#     'middle_queen': 40
-# }
+POINTS = {
+    'piece': 1,
+    'queen': 50,
+    'middle_piece': 10,
+    'promotion': 20,
+    'safe': 10,
+    'defend': 10,
+    'jump': 15,
+    'special_defend': 20,
+    'special_jump': 20
+}
