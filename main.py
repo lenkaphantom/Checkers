@@ -78,8 +78,8 @@ def main():
             run = False
 
         if game.turn == WHITE:
-            best_move = alpha_beta_pruning(game.board, 7, game.turn, mode)
-            game.ai_move(best_move)
+            best_move, moved_piece = alpha_beta_pruning(game.board, 7, game.turn, mode)
+            game.ai_move(best_move, moved_piece)
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
