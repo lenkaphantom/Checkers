@@ -284,21 +284,27 @@ class Board(object):
         - sprečavanje protivnika da dobije kraljicu,
         - napad na protivničku kraljicu.
         """
+        white_over = self.game_over(WHITE)
+        brown_over = self.game_over(BROWN)
+
         if maximizing_player:
-            if self.game_over(WHITE) == "WHITE":
+            if white_over == "WHITE":
                 return float('inf')
-            elif self.game_over(WHITE) == "BROWN":
+            elif white_over== "BROWN":
                 return float('-inf')
         else:
-            if self.game_over(BROWN) == "BROWN":
+            if brown_over == "BROWN":
                 return float('-inf')
-            elif self.game_over(BROWN) == "WHITE":
+            elif brown_over == "WHITE":
                 return float('inf')
+        
+        if white_over == "DRAW":
+            return 0
 
         return self.evaluation_based_on_phase(
-            pawn_weight=10, queen_weight=30, safe_pawn=5, safe_queen=10,
-            mobility_pawn=2, mobility_queen=5, promotion_bonus=20,
-            defending_pieces=10, attacking_piece=10, center_pawn=5, center_queen=15,
+            pawn_weight=10, queen_weight=35, safe_pawn=7, safe_queen=15,
+            mobility_pawn=3, mobility_queen=7, promotion_bonus=25,
+            defending_pieces=8, attacking_piece=12, center_pawn=7, center_queen=20,
             mobility_penalty=-5
         )
 
