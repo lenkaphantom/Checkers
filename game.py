@@ -114,12 +114,13 @@ class Game(object):
         """
         Funkcija koja pomera figuru na odgovarajuce polje u zavisnosti od odabrane strategije.
         """
-        old_position = (moved_piece.row, moved_piece.col)
-        diff_pos = self.find_diff(self.board, new_board)
-        self.board = new_board
-        self.change_turn()
-        self.old_position = old_position
-        self.new_position = diff_pos
+        if moved_piece:
+            old_position = (moved_piece.row, moved_piece.col)
+            diff_pos = self.find_diff(self.board, new_board)
+            self.board = new_board
+            self.change_turn()
+            self.old_position = old_position
+            self.new_position = diff_pos
 
     def find_diff(self, old_board, new_board):
         for row in range(ROWS):

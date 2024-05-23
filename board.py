@@ -416,9 +416,9 @@ class Board(object):
         if total_pieces >= 20:
             return self.evaluation_based_on_phase(10, 60, 5, 10, 5, 5, 10, 5, 15, 15)
         elif total_pieces >= 12:
-            return self.evaluation_based_on_phase(15, 65, 5, 10, 10, 10, 15, 10, 10, 10)
+            return self.evaluation_based_on_phase(15, 75, 7.5, 20, 10, 15, 20, 10, 10, 10)
         else:
-            return self.evaluation_based_on_phase(20, 70, 10, 20, 10, 25, 20, 10, 10, 10)
+            return self.evaluation_based_on_phase(20, 100, 10, 30, 10, 25, 20, 20, 10, 10)
 
     def evaluation_based_on_phase(self, pawn_weight, queen_weight, safe_pawn, safe_queen,
                                 mobility_pawn, mobility_queen, promotion_bonus,
