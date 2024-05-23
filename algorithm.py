@@ -27,6 +27,8 @@ def alpha_beta_pruning(board, max_depth, turn, mode):
                 if new_value > value:
                     value = new_value
                     best_move = state[0]
+                if value == float('inf'):
+                    break
                 alpha = max(alpha, value)
                 if alpha >= beta:
                     break
@@ -40,6 +42,8 @@ def alpha_beta_pruning(board, max_depth, turn, mode):
                 if new_value < value:
                     value = new_value
                     best_move = state[0]
+                if value == float('-inf'):
+                    break
                 beta = min(beta, value)
                 if alpha >= beta:
                     break
