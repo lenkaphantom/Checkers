@@ -100,7 +100,6 @@ def get_states(board, maximizing_player, mode):
             new_board.move(new_piece, move[0], move[1])
             if capture:
                 new_board.remove(capture)
-            # Ne vraćamo vrednost ovde, samo tablu i figuru koja je napravila potez
             states.append((new_board, piece))
     
     return states
