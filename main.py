@@ -1,7 +1,13 @@
 import pygame
+<<<<<<< HEAD
 from constants import *
 from game import Game
 from algorithm import alpha_beta_pruning
+=======
+from checkers.constants import WIDTH, HEIGHT, SQUARE_SIZE, BROWN, BEIGE, WHITE
+from checkers.board import Board
+from checkers.game import Game
+>>>>>>> c58cb619744ff6846b37f5bf0972f7fdbf758d83
 
 FPS = 60
 
@@ -70,6 +76,7 @@ def main():
 
     while run:
         clock.tick(FPS)
+<<<<<<< HEAD
 
         if game.board.game_over(game.turn) is not None:
             pygame.time.delay(900)
@@ -80,6 +87,13 @@ def main():
         if game.turn == WHITE:
             best_move, moved_piece = alpha_beta_pruning(game.board, 7, game.turn, mode)
             game.ai_move(best_move, moved_piece)
+=======
+        
+        if game.winner() is not None:
+            game.draw_winner()
+            pygame.time.delay(3000)
+            run = False
+>>>>>>> c58cb619744ff6846b37f5bf0972f7fdbf758d83
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
